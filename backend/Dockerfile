@@ -28,21 +28,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Pin the Puppeteer cache path via ENV so it's identical at build time
-# (npm ci's postinstall downloads Chrome here) and at runtime (the app
-# looks for Chrome here). This makes .puppeteerrc.cjs redundant/backup.
+# Pin the Puppeteer cache path so build-time and runtime agree on location
 ENV PUPPETEER_CACHE_DIR=/app/.cache/puppeteer
 
 COPY package*.json ./
-RUN npm ci --omit=dev
 
-# Force-remove any corrupted/partial cache, then install Chrome fresh
-RUN rm -rf $PUPPETEER_CACHE_DIR \
-    && npx puppeteer browsers install chrome
+# PUPPETEER_SKIP_DOWNLOAD=true prevents the postinstall script from
+# attempting a Chrome download during npm ci (which often fails/corrupts
+# in Docker). We install Chrome explicitly in the next step instead.
+RUN PUPPETEER_SKIP_DOWNLOAD=true npm ci --omit=dev
 
-# Fail the BUILD (not silently fail later at runtime) if Chrome
-# didn't actually get installed where we expect it.
-RUN node -e "(async()=>{const p=require('puppeteer'); const fp=await p.executablePath(); const fs=require('fs'); console.log('Puppeteer expects Chrome at:', fp); if(!fs.existsSync(fp)){console.error('CHROME BINARY MISSING AT BUILD TIME'); process.exit(1);} console.log('Chrome binary verified present.');})();"
+# Now install Chrome into a guaranteed-clean cache directory
+RUN npx puppeteer browsers install chrome
+
+# Fail the BUILD if Chrome didn't actually get installed
+RUN node -e "(async()=>{const p=require('puppeteer'); const fp=await p.executablePath(); const fs=require('fs'); console.log('Chrome at:', fp); if(!fs.existsSync(fp)){console.error('CHROME BINARY MISSING'); process.exit(1);} console.log('Chrome verified.');})()"
 
 # Copy application source code
 COPY . .
