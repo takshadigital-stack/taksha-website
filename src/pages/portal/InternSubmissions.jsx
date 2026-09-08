@@ -2,12 +2,12 @@ import React from 'react';
 import SEO from '../../components/SEO/SEO';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
-import { ExternalLink, MessageSquare, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
+import { ExternalLink, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import './InternSubmissions.css';
 
 export default function InternSubmissions() {
   const { user } = useAuth();
-  const { submissions, tasks } = useWorkspace();
+  const { submissions } = useWorkspace();
 
   const mySubmissions = submissions.filter(s => s.internId === user?.id);
 

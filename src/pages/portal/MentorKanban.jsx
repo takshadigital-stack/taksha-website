@@ -2,11 +2,9 @@ import React from 'react';
 import SEO from '../../components/SEO/SEO';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { MoreHorizontal } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 export default function MentorKanban() {
   const { tasks, interns } = useWorkspace();
-  const navigate = useNavigate();
 
   // Similar logic to InternDashboard Kanban, but without filtering by assignee.
   const KANBAN_DATA = {

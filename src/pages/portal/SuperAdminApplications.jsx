@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Clock, Eye, CheckCircle, XCircle, Search, Filter, X, FileText, Download, User, BookOpen, Calendar, Briefcase as BriefcaseIcon, FileSignature, Mail } from 'lucide-react';
+import { Briefcase, Clock, Eye, XCircle, Search, X, FileText, Download, User, BookOpen, Calendar, Briefcase as BriefcaseIcon, FileSignature, Mail } from 'lucide-react';
 import SectionHeading from '../../components/SectionHeading/SectionHeading';
 import './MentorInternDetail.css'; // Reusing some modal styles if necessary
 

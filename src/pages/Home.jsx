@@ -365,7 +365,6 @@ function CountUp({ target, suffix = '', className }) {
       return;
     }
 
-    let start = 0;
     const duration = 1200;
     const startTime = Date.now();
 

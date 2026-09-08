@@ -73,7 +73,7 @@ export default function MentorTasks() {
     }
   };
 
-  const handleCreateTaskSubmit = async (e) => {
+  const _handleCreateTaskSubmit = async (e) => {
     e.preventDefault();
     if (!newTask.assignee) {
       setError('Please select an intern to assign this task to.');

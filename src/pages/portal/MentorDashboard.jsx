@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Users, CheckSquare, Clock, AlertTriangle, 
+  CheckSquare, Clock, AlertTriangle, 
   Search, Filter, ChevronRight, FileCheck, ArrowRight, X, Megaphone, BarChart2
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -10,7 +10,7 @@ import './MentorDashboard.css';
 
 export default function MentorDashboard() {
   const { user } = useAuth();
-  const { projects, tasks, interns, submissions, createTask, updateTaskStatus, createAnnouncement, reviewSubmission } = useWorkspace();
+  const { projects, tasks, interns, submissions, createTask, createAnnouncement, reviewSubmission } = useWorkspace();
   const navigate = useNavigate();
   const [isTaskModalOpen, setIsTaskModalOpen] = React.useState(false);
   const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = React.useState(false);

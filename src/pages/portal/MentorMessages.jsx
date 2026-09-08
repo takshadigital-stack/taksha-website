@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import SEO from '../../components/SEO/SEO';
 import { useAuth } from '../../context/AuthContext';
@@ -27,13 +27,13 @@ export default function MentorMessages() {
     if (activeInternId) {
       fetchMessages(activeInternId);
     }
-  }, [activeInternId]);
+  }, [activeInternId, fetchMessages]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const fetchMessages = async (internId) => {
+  const fetchMessages = useCallback(async (internId) => {
     try {
       const token = localStorage.getItem('taksha_token');
       const res = await axios.get(`${API_URL}/messages/${internId}`, {
@@ -43,7 +43,7 @@ export default function MentorMessages() {
     } catch (err) {
       console.error('Failed to fetch messages:', err);
     }
-  };
+  }, [API_URL]);
 
   const handleSend = async (e) => {
     e.preventDefault();

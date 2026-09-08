@@ -2,7 +2,6 @@
  * Services Index Page — Overview hub linking to all 5 services
  * PRD §13.1
  */
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Palette, Layout, Globe, Code, Bot } from 'lucide-react';
 import SEO from '../components/SEO/SEO';

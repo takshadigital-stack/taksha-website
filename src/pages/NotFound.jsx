@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Grid } from 'lucide-react';
 import SEO from '../components/SEO/SEO';

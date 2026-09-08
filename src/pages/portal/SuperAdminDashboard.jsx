@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Users, Briefcase, FileCheck, ShieldAlert, Cpu, CheckCircle, 
-  XCircle, Clock, Download, Search, AlertCircle, ArrowRight,
+  Users, Briefcase, Cpu, CheckCircle, 
+  XCircle, Download, ArrowRight,
   Mail, FileText, UserPlus, FileSignature, Star, Inbox
 } from 'lucide-react';
-import SectionHeading from '../../components/SectionHeading/SectionHeading';
 import './MentorDashboard.css';
 
 export default function SuperAdminDashboard() {

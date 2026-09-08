@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, CheckCircle, Upload, X } from 'lucide-react';
+import { ArrowRight, CheckCircle, Upload } from 'lucide-react';
 
 export default function ApplicationForm({ role, onCancel }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,7 +33,7 @@ export default function ApplicationForm({ role, onCancel }) {
         setIsApplied(true);
       } else {
         let errData = {};
-        try { errData = await response.json(); } catch(e) {}
+        try { errData = await response.json(); } catch(_e) {}
         setErrorMsg(`Failed to submit application. ${errData.details ? 'Error: ' + errData.details : 'Please try again later.'}`);
       }
     } catch (err) {

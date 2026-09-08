@@ -31,7 +31,7 @@ export default function MentorReports() {
       }
     };
     fetchData();
-  }, []);
+  }, [API_URL]);
 
   const handleExportCSV = () => {
     if (!summary) return;

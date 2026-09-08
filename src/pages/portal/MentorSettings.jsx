@@ -1,6 +1,6 @@
 import React from 'react';
 import SEO from '../../components/SEO/SEO';
-import { Settings, Bell, Shield, Palette } from 'lucide-react';
+import { Bell, Palette } from 'lucide-react';
 
 export default function MentorSettings() {
   return (

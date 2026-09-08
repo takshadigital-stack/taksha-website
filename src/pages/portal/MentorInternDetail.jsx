@@ -28,7 +28,7 @@ export default function MentorInternDetail() {
       }
     };
     fetchEligibility();
-  }, [internId]);
+  }, [internId, checkEligibility]);
 
   const handleIssueCertificate = async () => {
     setIsGeneratingCert(true);

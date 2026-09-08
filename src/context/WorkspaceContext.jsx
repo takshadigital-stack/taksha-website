@@ -12,7 +12,7 @@ export const useWorkspace = () => useContext(WorkspaceContext);
 export const WorkspaceProvider = ({ children }) => {
   const [data, setData] = useState({ projects: [], tasks: [], interns: [], announcements: [], submissions: [] });
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return; // Don't fetch if not logged in

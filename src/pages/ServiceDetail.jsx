@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Clock, ArrowLeft } from 'lucide-react';
 import SEO from '../components/SEO/SEO';
@@ -31,7 +31,7 @@ export default function ServiceDetail() {
   }
 
   // Find related projects (just match first category or string match for simplicity)
-  const relatedProjects = allProjects
+  const _relatedProjects = allProjects
     .filter((p) => p.categories.some((c) => c.toLowerCase().includes(service.title.split(' ')[0].toLowerCase())))
     .slice(0, 2);
 

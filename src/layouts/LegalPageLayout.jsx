@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SEO from '../components/SEO/SEO';
-import SectionHeading from '../components/SectionHeading/SectionHeading';
 import './LegalPageLayout.css';
 
 const fadeUp = {

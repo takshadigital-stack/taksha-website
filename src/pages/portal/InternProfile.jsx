@@ -33,7 +33,7 @@ export default function InternProfile() {
       setCertData(data);
     };
     if (user?.id) fetchEligibility();
-  }, [user]);
+  }, [user, checkEligibility]);
 
   const handleDownloadCertificate = async () => {
     setIsGeneratingCert(true);

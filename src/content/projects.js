@@ -22,7 +22,7 @@ export const CATEGORIES = [
 /* 
   Reusable empty 13-section boilerplate for concept projects that are not yet fully populated.
 */
-const emptyCaseStudy = {
+const _emptyCaseStudy = {
   brief: "Project brief to be documented.",
   challenge: "The primary challenge and constraints to be documented.",
   research: {

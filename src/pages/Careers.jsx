@@ -3,11 +3,10 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   ArrowRight, MapPin, Clock, Code, Database, 
-  PenTool, Megaphone, Users, Zap, Heart, 
-  Gift, TrendingUp, Globe, X, CheckCircle
+  Users, Zap, Heart, 
+  Gift, TrendingUp, Globe, X
 } from 'lucide-react';
 import SEO from '../components/SEO/SEO';
-import SectionHeading from '../components/SectionHeading/SectionHeading';
 import ApplicationForm from '../components/ApplicationForm';
 import './Careers.css';
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import SEO from '../../components/SEO/SEO';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
-import { Filter, Search, CheckSquare, X, ChevronRight, ChevronDown } from 'lucide-react';
+import { X, ChevronRight, ChevronDown } from 'lucide-react';
 import './InternTasks.css';
 
 export default function InternTasks() {
@@ -26,7 +26,7 @@ export default function InternTasks() {
     return true;
   });
 
-  const getStatusLabel = (status) => {
+  const _getStatusLabel = (status) => {
     switch(status) {
       case 'IN_PROGRESS': return 'In Progress';
       case 'CHANGES_REQUESTED': return 'Changes Req';

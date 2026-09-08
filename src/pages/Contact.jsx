@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
 import SEO from '../components/SEO/SEO';
@@ -150,7 +150,7 @@ export default function Contact() {
       } else {
         setSubmitError(result.error || 'Something went wrong. Please try again.');
       }
-    } catch (err) {
+    } catch (_err) {
       setSubmitError('Failed to connect to the server. Please check your connection or email us directly at hello@taksha.studio.');
     } finally {
       setIsSubmitting(false);

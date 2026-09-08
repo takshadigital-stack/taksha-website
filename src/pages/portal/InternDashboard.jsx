@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   ArrowRight, Calendar, Megaphone, CheckSquare, 
-  Clock, Eye, Search, Upload, MessageSquare, Info, X
+  Clock, Eye, Upload, MessageSquare, Info, X
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import SEO from '../../components/SEO/SEO';
@@ -22,7 +22,7 @@ export default function InternDashboard() {
   const { tasks, updateTaskStatus, announcements } = useWorkspace();
   const navigate = useNavigate();
   const [submitModalOpen, setSubmitModalOpen] = React.useState(false);
-  const [activeTaskToSubmit, setActiveTaskToSubmit] = React.useState(null);
+  const [activeTaskToSubmit, _setActiveTaskToSubmit] = React.useState(null);
   const [submissionLink, setSubmissionLink] = React.useState('');
 
   const myTasks = tasks.filter(t => t.assignee === user?.id);
