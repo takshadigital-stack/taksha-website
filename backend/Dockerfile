@@ -36,12 +36,16 @@ ENV PUPPETEER_CACHE_DIR=/app/.cache/puppeteer
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# Explicitly install the browser because npm postinstall often drops privileges or skips downloads in Docker
-RUN npx puppeteer browsers clear && npx puppeteer browsers install chrome
+# Force-remove any corrupted/partial cache, then install Chrome fresh
+RUN rm -rf $PUPPETEER_CACHE_DIR \
+    && npx puppeteer browsers install chrome
 
 # Fail the BUILD (not silently fail later at runtime) if Chrome
 # didn't actually get installed where we expect it.
 RUN node -e "(async()=>{const p=require('puppeteer'); const fp=await p.executablePath(); const fs=require('fs'); console.log('Puppeteer expects Chrome at:', fp); if(!fs.existsSync(fp)){console.error('CHROME BINARY MISSING AT BUILD TIME'); process.exit(1);} console.log('Chrome binary verified present.');})();"
+
+# Copy application source code
+COPY . .
 
 RUN npx prisma generate
 RUN node scripts/download-fonts.js
