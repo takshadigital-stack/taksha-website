@@ -5,10 +5,13 @@ const puppeteer = require('puppeteer');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// Email Transporter (Configured for Gmail as requested)
+// Email Transporter (Configured for Gmail with IPv4 forced)
 const createTransporter = () => {
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    family: 4, // Force IPv4 — production servers often lack IPv6 connectivity
     auth: {
       user: process.env.EMAIL_USER || 'takshadigital@gmail.com',
       pass: process.env.EMAIL_PASSWORD || 'dummy_password', // Should be App Password
