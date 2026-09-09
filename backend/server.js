@@ -13,7 +13,7 @@ const { PROJECT_TEMPLATES } = require('./projectTemplates');
 const { uploadFile, getPublicUrl } = require('./storage');
 const takshaHR = require('./takshaHR');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const app = express();
 const prisma = new PrismaClient();
