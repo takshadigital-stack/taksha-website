@@ -20,8 +20,11 @@ const prisma = new PrismaClient();
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the React frontend app
-app.use(express.static(path.join(__dirname, '../dist')));
+// Serve static files from the React frontend app (only if dist exists, e.g. local dev)
+const distPath = path.join(__dirname, '../dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+}
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -1299,10 +1302,6 @@ app.post('/api/project-templates/assign', authenticateToken, async (req, res) =>
   }
 });
 
-// All other GET requests not handled before will return our React app
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist', 'index.html'));
-});
 
 const autoSubmitOverdueProjects = async () => {
   try {
@@ -1754,6 +1753,13 @@ app.post('/api/applications/:id/offer-response', async (req, res) => {
 
 autoSubmitOverdueProjects();
 setInterval(autoSubmitOverdueProjects, 60 * 60 * 1000);
+
+// SPA catch-all: MUST be after ALL API routes
+if (fs.existsSync(path.join(__dirname, '../dist', 'index.html'))) {
+  app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist', 'index.html'));
+  });
+}
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
