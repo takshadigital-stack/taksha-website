@@ -1569,6 +1569,7 @@ app.put('/api/applications/:id/approve-offer', authenticateToken, async (req, re
 
 // Serve offer letter PDF via API (works across frontend/backend separation)
 // Accepts token via query param since this opens in a new browser tab
+// Regenerates PDF on-the-fly if file is missing (ephemeral server storage)
 app.get('/api/applications/:id/offer-pdf', async (req, res) => {
   try {
     // Auth: accept token from query param (new tab can't send Authorization header)
@@ -1585,27 +1586,43 @@ app.get('/api/applications/:id/offer-pdf', async (req, res) => {
       where: { id: req.params.id }
     });
 
-    if (!application || !application.offerUrl) {
-      return res.status(404).json({ error: 'No offer letter found' });
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found' });
     }
 
     // If it's a full URL (Supabase), redirect to it
-    if (application.offerUrl.startsWith('http')) {
+    if (application.offerUrl && application.offerUrl.startsWith('http')) {
       return res.redirect(application.offerUrl);
     }
 
-    // If it's a local relative path, serve the file
-    const pdfPath = path.join(__dirname, application.offerUrl);
-    if (!fs.existsSync(pdfPath)) {
-      return res.status(404).json({ error: 'Offer PDF file not found on server' });
+    // Try to serve existing local file
+    if (application.offerUrl) {
+      const pdfPath = path.join(__dirname, application.offerUrl);
+      if (fs.existsSync(pdfPath)) {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="Offer_Letter_${application.name.replace(/\s+/g, '_')}.pdf"`);
+        return fs.createReadStream(pdfPath).pipe(res);
+      }
     }
+
+    // File not found or no offerUrl — regenerate PDF on-the-fly using HTML template
+    console.log(`[Offer PDF] Regenerating PDF for application ${application.id} (${application.name})`);
+    const localPdfPath = await takshaHR.generateOfferPDF(application);
+
+    // Update the offerUrl in DB with the new local path
+    const pdfFilename = path.basename(localPdfPath);
+    const newOfferUrl = `/uploads/offers/${pdfFilename}`;
+    await prisma.application.update({
+      where: { id: req.params.id },
+      data: { offerUrl: newOfferUrl }
+    });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="Offer_Letter_${application.name.replace(/\s+/g, '_')}.pdf"`);
-    fs.createReadStream(pdfPath).pipe(res);
+    fs.createReadStream(localPdfPath).pipe(res);
   } catch (err) {
     console.error('Error serving offer PDF:', err);
-    res.status(500).json({ error: 'Failed to serve offer PDF' });
+    res.status(500).json({ error: 'Failed to serve offer PDF: ' + (err.message || err.toString()) });
   }
 });
 
