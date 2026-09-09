@@ -19,16 +19,27 @@ const createTransporter = () => {
 const sendEmail = async ({ to, subject, html, attachments = [] }) => {
   try {
     const transporter = createTransporter();
-    await transporter.sendMail({
+    
+    // Verify transporter connection before sending
+    try {
+      await transporter.verify();
+      console.log(`[Taksha HR Email] Transporter verified. Sending to: ${to}, Subject: "${subject}"`);
+    } catch (verifyErr) {
+      console.error('[Taksha HR Email] Transporter verification failed:', verifyErr.message);
+      return { success: false, error: new Error(`Email transporter failed to connect: ${verifyErr.message}. Check EMAIL_USER and EMAIL_PASSWORD in .env`) };
+    }
+    
+    const info = await transporter.sendMail({
       from: '"Taksha HR — Taksha Nexus" <takshadigital@gmail.com>',
       to,
       subject,
       html,
       attachments,
     });
-    return { success: true };
+    console.log(`[Taksha HR Email] Email sent successfully to ${to}. MessageId: ${info.messageId}`);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error("Email delivery failed:", error);
+    console.error("[Taksha HR Email] Email delivery failed:", error.message);
     return { success: false, error };
   }
 };

@@ -123,11 +123,13 @@ export default function SuperAdminApplications() {
         setSelectedApp(updatedApp);
         alert('Offer sent to candidate successfully!');
       } else {
-        alert('Failed to send offer.');
+        const errData = await response.json().catch(() => ({}));
+        const errMsg = errData.details || errData.error || 'Failed to send offer.';
+        alert(`Failed to send offer: ${errMsg}`);
       }
     } catch (err) {
       console.error(err);
-      alert('Error sending offer.');
+      alert('Network error sending offer. Please check your connection.');
     }
   };
 

@@ -734,18 +734,33 @@ app.put('/api/applications/:id/status', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const application = await prisma.application.update({
+    let application = await prisma.application.update({
       where: { id },
       data: { status }
     });
 
-    await takshaHR.logSystemAction('Application status changed', application.name, `New status: \${status}`, 'Super Admin');
+    await takshaHR.logSystemAction('Application status changed', application.name, `New status: ${status}`, 'Super Admin');
 
     // If candidate is selected, Taksha HR should automatically generate the offer letter
     if (status === 'Selected' && !application.offerUrl) {
       try {
-        const offerUrl = await takshaHR.generateOfferPDF(application);
-        await prisma.application.update({
+        const localPdfPath = await takshaHR.generateOfferPDF(application);
+        
+        // Convert local path to a proper URL (try Supabase, fall back to relative URL)
+        const { uploadFile: upFile, getPublicUrl: getPubUrl } = require('./storage');
+        let offerUrl;
+        try {
+          const fileBuffer = fs.readFileSync(localPdfPath);
+          const objectPath = `offer_${application.id}.pdf`;
+          await upFile('submissions', objectPath, fileBuffer, 'application/pdf');
+          offerUrl = getPubUrl('submissions', objectPath);
+        } catch (uploadErr) {
+          console.warn('Supabase upload failed during auto-generation, using local URL:', uploadErr.message);
+          const pdfFilename = path.basename(localPdfPath);
+          offerUrl = `/uploads/offers/${pdfFilename}`;
+        }
+        
+        application = await prisma.application.update({
           where: { id },
           data: { 
             offerStatus: 'Awaiting Approval',
@@ -1446,9 +1461,25 @@ app.post('/api/applications/:id/send-offer', authenticateToken, async (req, res)
       attachments
     });
 
-    await takshaHR.logSystemAction('Offer Sent', application.name, `Email sent to ${application.email} (Success: ${emailRes.success})`, 'Super Admin');
+    if (!emailRes.success) {
+      console.error('Email delivery failed for offer:', emailRes.error);
+      await takshaHR.logSystemAction('Offer Email Failed', application.name, `Email to ${application.email} failed: ${emailRes.error?.message || 'Unknown error'}`, 'Super Admin');
+      
+      // Revert status since email wasn't actually sent
+      await prisma.application.update({
+        where: { id: req.params.id },
+        data: { offerStatus: 'Generated' }
+      });
+      
+      return res.status(500).json({ 
+        error: 'Failed to send offer email', 
+        details: emailRes.error?.message || 'Email delivery failed. Please check email configuration.' 
+      });
+    }
 
-    res.json({ ...updatedApp, emailSent: emailRes.success });
+    await takshaHR.logSystemAction('Offer Sent', application.name, `Email sent to ${application.email}`, 'Super Admin');
+
+    res.json({ ...updatedApp, emailSent: true });
   } catch (err) {
     console.error('Error sending offer:', err);
     res.status(500).json({ error: 'Failed to send offer letter: ' + (err.message || err.toString()) });
