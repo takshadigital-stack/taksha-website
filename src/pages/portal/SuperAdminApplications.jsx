@@ -442,7 +442,7 @@ export default function SuperAdminApplications() {
                 {selectedApp.offerUrl && (
                   <>
                     <a 
-                      href={selectedApp.offerUrl} 
+                      href={selectedApp.offerUrl.startsWith('http') ? selectedApp.offerUrl : `${API_URL}/applications/${selectedApp.id}/offer-pdf?token=${localStorage.getItem('taksha_token')}`} 
                       target="_blank" 
                       rel="noreferrer"
                       style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--color-card-mint)', color: 'var(--color-ink)', border: '2px solid var(--color-ink)', padding: '8px 16px', fontWeight: 'bold', textDecoration: 'none' }}

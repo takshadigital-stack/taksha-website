@@ -1567,6 +1567,48 @@ app.put('/api/applications/:id/approve-offer', authenticateToken, async (req, re
   }
 });
 
+// Serve offer letter PDF via API (works across frontend/backend separation)
+// Accepts token via query param since this opens in a new browser tab
+app.get('/api/applications/:id/offer-pdf', async (req, res) => {
+  try {
+    // Auth: accept token from query param (new tab can't send Authorization header)
+    const token = req.query.token || (req.headers['authorization'] && req.headers['authorization'].split(' ')[1]);
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    
+    try {
+      jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
+      return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+
+    const application = await prisma.application.findUnique({
+      where: { id: req.params.id }
+    });
+
+    if (!application || !application.offerUrl) {
+      return res.status(404).json({ error: 'No offer letter found' });
+    }
+
+    // If it's a full URL (Supabase), redirect to it
+    if (application.offerUrl.startsWith('http')) {
+      return res.redirect(application.offerUrl);
+    }
+
+    // If it's a local relative path, serve the file
+    const pdfPath = path.join(__dirname, application.offerUrl);
+    if (!fs.existsSync(pdfPath)) {
+      return res.status(404).json({ error: 'Offer PDF file not found on server' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="Offer_Letter_${application.name.replace(/\s+/g, '_')}.pdf"`);
+    fs.createReadStream(pdfPath).pipe(res);
+  } catch (err) {
+    console.error('Error serving offer PDF:', err);
+    res.status(500).json({ error: 'Failed to serve offer PDF' });
+  }
+});
+
 app.get('/api/applications/:id/offer-details', async (req, res) => {
   try {
     // Public route for candidates to view offer status (without JWT, but using unique application ID as pseudo-auth)
