@@ -1625,6 +1625,52 @@ app.get('/api/applications/:id/offer-pdf', async (req, res) => {
   }
 });
 
+// Public offer PDF for candidates (no JWT needed — uses application UUID as pseudo-auth)
+app.get('/api/applications/:id/offer-pdf-public', async (req, res) => {
+  try {
+    const application = await prisma.application.findUnique({
+      where: { id: req.params.id }
+    });
+
+    if (!application || !application.offerStatus || application.offerStatus === 'Awaiting Approval') {
+      return res.status(404).json({ error: 'Offer not found' });
+    }
+
+    // If it's a full URL (Supabase), redirect to it
+    if (application.offerUrl && application.offerUrl.startsWith('http')) {
+      return res.redirect(application.offerUrl);
+    }
+
+    // Try to serve existing local file
+    if (application.offerUrl) {
+      const pdfPath = path.join(__dirname, application.offerUrl);
+      if (fs.existsSync(pdfPath)) {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="Offer_Letter_${application.name.replace(/\s+/g, '_')}.pdf"`);
+        return fs.createReadStream(pdfPath).pipe(res);
+      }
+    }
+
+    // File not found — regenerate PDF on-the-fly
+    console.log(`[Offer PDF Public] Regenerating PDF for application ${application.id} (${application.name})`);
+    const localPdfPath = await takshaHR.generateOfferPDF(application);
+
+    const pdfFilename = path.basename(localPdfPath);
+    const newOfferUrl = `/uploads/offers/${pdfFilename}`;
+    await prisma.application.update({
+      where: { id: req.params.id },
+      data: { offerUrl: newOfferUrl }
+    });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="Offer_Letter_${application.name.replace(/\s+/g, '_')}.pdf"`);
+    fs.createReadStream(localPdfPath).pipe(res);
+  } catch (err) {
+    console.error('Error serving public offer PDF:', err);
+    res.status(500).json({ error: 'Failed to serve offer PDF: ' + (err.message || err.toString()) });
+  }
+});
+
 app.get('/api/applications/:id/offer-details', async (req, res) => {
   try {
     // Public route for candidates to view offer status (without JWT, but using unique application ID as pseudo-auth)

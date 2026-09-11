@@ -14,8 +14,9 @@ export default function OfferResponse() {
   const [actioning, setActioning] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL || '/api';
+
   useEffect(() => {
-    const API_URL = import.meta.env.VITE_API_URL || '/api';
     fetch(`${API_URL}/applications/${id}/offer-details`)
       .then(res => {
         if (!res.ok) throw new Error('Offer not found or invalid');
@@ -37,7 +38,6 @@ export default function OfferResponse() {
   const handleAction = async (action) => {
     setActioning(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || '/api';
       const res = await fetch(`${API_URL}/applications/${id}/offer-response`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -55,17 +55,25 @@ export default function OfferResponse() {
     }
   };
 
+  // Build PDF URL: use Supabase URL if available, otherwise use the public API endpoint
+  const getPdfUrl = () => {
+    if (offer?.offerUrl && offer.offerUrl.startsWith('http')) {
+      return offer.offerUrl;
+    }
+    return `${API_URL}/applications/${id}/offer-pdf-public`;
+  };
+
   return (
     <>
       <SEO title="Offer Response | Taksha Nexus" />
       <Navbar />
-      <main className="careers-page pt-32 pb-24" style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <main className="careers-page" style={{ minHeight: '80vh', paddingBottom: '4rem' }}>
         <div className="container" style={{ maxWidth: '600px', margin: '0 auto' }}>
           
           {loading ? (
-            <div style={{ textAlign: 'center' }}>Loading offer details...</div>
+            <div style={{ textAlign: 'center', paddingTop: '4rem' }}>Loading offer details...</div>
           ) : error ? (
-            <div style={{ textAlign: 'center', color: 'var(--color-card-pink)' }}>
+            <div style={{ textAlign: 'center', color: 'var(--color-card-pink)', paddingTop: '4rem' }}>
               <h2>{error}</h2>
               <p>This link may have expired or is invalid.</p>
             </div>
@@ -100,7 +108,7 @@ export default function OfferResponse() {
                     <p><strong>Duration:</strong> {offer.duration || '3 Months'}</p>
                     <p><strong>Location:</strong> Remote</p>
                     <div style={{ marginTop: 'var(--space-4)' }}>
-                      <a href={offer.offerUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-card-blue)', textDecoration: 'underline' }}>
+                      <a href={getPdfUrl()} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-card-blue)', textDecoration: 'underline' }}>
                         View Official Offer Letter (PDF)
                       </a>
                     </div>
@@ -134,3 +142,4 @@ export default function OfferResponse() {
     </>
   );
 }
+
