@@ -4,6 +4,7 @@
  */
 import { createBrowserRouter } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
+import RouteError from './pages/RouteError';
 import RootLayout from './layouts/RootLayout';
 import AuthLayout from './layouts/AuthLayout';
 import PortalLayout from './layouts/PortalLayout';
@@ -81,6 +82,7 @@ function SuspenseWrapper({ children }) {
 
 export const router = createBrowserRouter([
   {
+    errorElement: <RouteError />,
     element: <AuthLayout />,
     children: [
       {
@@ -94,6 +96,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    errorElement: <RouteError />,
     element: <PortalLayout role="intern" />,
     children: [
       {
@@ -112,6 +115,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    errorElement: <RouteError />,
     element: <PortalLayout role="mentor" />,
     children: [
       {
@@ -124,6 +128,7 @@ export const router = createBrowserRouter([
       { path: '/mentor/kanban', element: <SuspenseWrapper><MentorKanban /></SuspenseWrapper> },
       { path: '/mentor/submissions', element: <SuspenseWrapper><MentorSubmissions /></SuspenseWrapper> },
       { path: '/mentor/reviews', element: <SuspenseWrapper><MentorReviews /></SuspenseWrapper> },
+      { path: '/mentor/leave', element: <SuspenseWrapper><InternLeave /></SuspenseWrapper> },
       { path: '/mentor/reports', element: <SuspenseWrapper><MentorReports /></SuspenseWrapper> },
       { path: '/mentor/profile', element: <SuspenseWrapper><MentorProfile /></SuspenseWrapper> },
       { path: '/mentor/settings', element: <SuspenseWrapper><MentorSettings /></SuspenseWrapper> },
@@ -131,6 +136,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    errorElement: <RouteError />,
     element: <PortalLayout role="superadmin" />,
     children: [
       {
@@ -141,6 +147,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    errorElement: <RouteError />,
     element: <RootLayout />,
     children: [
       {

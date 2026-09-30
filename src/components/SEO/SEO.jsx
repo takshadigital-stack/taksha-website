@@ -6,15 +6,15 @@
 import { Helmet } from 'react-helmet-async';
 
 const SITE_NAME = 'Taksha Nexus';
-const SITE_URL = 'https://www.taksha.studio';
-const DEFAULT_OG_IMAGE = `${SITE_URL}/og/default.png`;
+const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://taksha.studio').replace(/\/$/, '');
+const DEFAULT_OG_IMAGE = `${SITE_URL}/taksha-nexus-logo.png`;
 
 export default function SEO({
   title,
   description,
   canonical,
   ogImage,
-  noindex = false,
+  noindex = /^\/(intern|mentor|superadmin)(\/|$)|^\/(login|change-password|offer-response)(\/|$)/.test(window.location.pathname),
   type = 'website',
 }) {
   const fullTitle = title ? `${title} | ${SITE_NAME} — Digital Craft Studio` : `${SITE_NAME} — Digital Craft Studio | Branding, Design & Engineering`;

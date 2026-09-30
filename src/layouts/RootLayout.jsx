@@ -10,7 +10,6 @@ import Navbar from '../components/Navbar/Navbar';
 import Footer from '../components/Footer/Footer';
 import StructuredData, { organizationSchema } from '../components/StructuredData/StructuredData';
 import { usePrefersReducedMotion } from '../context/MotionPreferenceContext';
-import CustomCursor from '../components/CustomCursor/CustomCursor';
 
 export default function RootLayout() {
   const location = useLocation();
@@ -21,10 +20,14 @@ export default function RootLayout() {
 
     let lenis;
     let rafId;
+    let disposed = false;
+    let ticker;
+    let tick;
 
     const initLenis = async () => {
       try {
         const Lenis = (await import('lenis')).default;
+        if (disposed) return;
         lenis = new Lenis({
           duration: 1.2,
           easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -34,13 +37,14 @@ export default function RootLayout() {
 
         const gsapModule = await import('gsap').catch(() => null);
         const scrollTriggerModule = await import('gsap/ScrollTrigger').catch(() => null);
+        if (disposed) return;
         if (gsapModule && scrollTriggerModule) {
           const { ScrollTrigger } = scrollTriggerModule;
           gsapModule.gsap.registerPlugin(ScrollTrigger);
           lenis.on('scroll', ScrollTrigger.update);
-          gsapModule.gsap.ticker.add((time) => {
-            lenis.raf(time * 1000);
-          });
+          ticker = gsapModule.gsap.ticker;
+          tick = (time) => lenis.raf(time * 1000);
+          ticker.add(tick);
           gsapModule.gsap.ticker.lagSmoothing(0);
         } else {
           function raf(time) {
@@ -57,6 +61,8 @@ export default function RootLayout() {
     initLenis();
 
     return () => {
+      disposed = true;
+      if (ticker && tick) ticker.remove(tick);
       if (lenis) lenis.destroy();
       if (rafId) cancelAnimationFrame(rafId);
     };
@@ -76,7 +82,6 @@ export default function RootLayout() {
 
   return (
     <>
-      <CustomCursor />
       <StructuredData schema={organizationSchema()} />
 
       <a href="#main-content" className="skip-link">

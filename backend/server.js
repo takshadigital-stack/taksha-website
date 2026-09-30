@@ -18,7 +18,14 @@ dotenv.config();
 const app = express();
 const prisma = new PrismaClient();
 app.use(cors());
-app.use(express.json());
+// Keep credential hashes out of every JSON response, including nested relations.
+app.use((req, res, next) => {
+  const json = res.json.bind(res);
+  res.json = value => json(require('./responseSafety.cjs').sanitize(value));
+  next();
+});
+app.use(express.json({ limit: '1mb' }));
+app.post('/api/contact', require('./contact.cjs').contact);
 
 // Serve static files from the React frontend app (only if dist exists, e.g. local dev)
 const distPath = path.join(__dirname, '../dist');
@@ -40,7 +47,7 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
-    const allowedExtensions = /pdf|zip|png|jpg|jpeg|fig/;
+    const allowedExtensions = /\.(pdf|zip|png|jpg|jpeg|fig)$/;
     const extname = allowedExtensions.test(path.extname(file.originalname).toLowerCase());
     if (extname) {
       return cb(null, true);
@@ -63,25 +70,28 @@ const authenticateToken = (req, res, next) => {
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Forbidden' });
+    if (err || user.requirePasswordChange || !['INTERN', 'MENTOR', 'SUPER_ADMIN'].includes(user.role)) return res.status(401).json({ error: 'Session expired or invalid. Please sign in again.' });
     req.user = user;
     next();
   });
 };
 
+require('./portalRoutes.cjs')(app, prisma, authenticateToken, bcrypt);
+
 // --- AUTH API ---
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (typeof email !== 'string' || typeof password !== 'string' || !email.trim() || !password) return res.status(400).json({ error: 'Email and password are required' });
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      return res.status(400).json({ error: 'User not found' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const validPassword = await bcrypt.compare(password, user.passwordHash);
     if (!validPassword) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     if (user.mustChangePassword) {
@@ -104,6 +114,7 @@ app.post('/api/auth/login', async (req, res) => {
 // --- USERS API (Interns) ---
 app.get('/api/users/interns', authenticateToken, async (req, res) => {
   try {
+    if (!['MENTOR', 'SUPER_ADMIN'].includes(req.user.role)) return res.status(403).json({ error: 'Only mentors can view intern records' });
     // Mentors can see their interns, Super Admins can see all
     let whereClause = { role: 'INTERN' };
     if (req.user.role === 'MENTOR') {
@@ -442,6 +453,7 @@ app.post('/api/tasks', authenticateToken, async (req, res) => {
       },
       include: { project: true }
     });
+    takshaHR.notifyTaskAssignment(task.assigneeId).catch(err => console.error('Task notification failed:', err.message));
     res.json({ ...task, assignee: task.assigneeId });
   } catch (err) {
     console.error('Failed to create task:', err);
@@ -453,6 +465,10 @@ app.put('/api/tasks/:id/status', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
+    if (!['TODO', 'IN_PROGRESS', 'REVIEW', 'CHANGES_REQUESTED', 'DONE'].includes(status)) return res.status(400).json({ error: 'Invalid task status' });
+    const existing = await prisma.task.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ error: 'Task not found' });
+    if (req.user.role === 'INTERN' && existing.assigneeId !== req.user.id) return res.status(403).json({ error: 'You can only update your own tasks' });
 
     const task = await prisma.task.update({
       where: { id },
@@ -639,6 +655,8 @@ app.post('/api/applications', upload.single('resume'), async (req, res) => {
       motivation, expectations, whySelectYou, source
     } = req.body;
 
+    if (!name?.trim() || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !roleId || !roleTitle) return res.status(400).json({ error: 'Name, valid email, and role are required' });
+    if (!req.file || path.extname(req.file.originalname).toLowerCase() !== '.pdf' || req.file.mimetype !== 'application/pdf' || req.file.buffer.subarray(0, 5).toString() !== '%PDF-') return res.status(400).json({ error: 'Please upload a valid PDF resume under 10 MB' });
     let resumeUrl = null;
     if (req.file) {
       try {
@@ -691,7 +709,7 @@ app.post('/api/applications', upload.single('resume'), async (req, res) => {
     res.status(201).json({ success: true, application });
   } catch (err) {
     console.error('Failed to submit application:', err);
-    res.status(500).json({ error: 'Failed to submit application', details: err.message || err.toString() });
+    res.status(500).json({ error: 'Failed to submit application. Please try again later.' });
   }
 });
 
@@ -1490,6 +1508,7 @@ app.post('/api/applications/:id/send-offer', authenticateToken, async (req, res)
 app.post('/api/auth/change-password', async (req, res) => {
   try {
     const { tempToken, newPassword } = req.body;
+    if (typeof newPassword !== 'string' || newPassword.length < 8 || Buffer.byteLength(newPassword, 'utf8') > 72) return res.status(400).json({ error: 'Password must contain 8–72 characters' });
     
     let decoded;
     try {
@@ -1502,6 +1521,8 @@ app.post('/api/auth/change-password', async (req, res) => {
       return res.status(400).json({ error: 'Invalid token type' });
     }
     
+    const account = await prisma.user.findUnique({ where: { id: decoded.id } });
+    if (!account?.mustChangePassword) return res.status(401).json({ error: 'Password-change token has already been used' });
     const passwordHash = await bcrypt.hash(newPassword, 10);
     const user = await prisma.user.update({
       where: { id: decoded.id },
@@ -1799,6 +1820,17 @@ app.post('/api/applications/:id/offer-response', async (req, res) => {
 
 autoSubmitOverdueProjects();
 setInterval(autoSubmitOverdueProjects, 60 * 60 * 1000);
+
+// API failures must remain JSON, rather than falling through to the SPA.
+app.use('/api', (req, res) => res.status(404).json({ error: 'API endpoint not found' }));
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  if (err instanceof multer.MulterError || err.message?.startsWith('Error: File upload')) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'File exceeds the 10 MB upload limit' : err.message });
+  if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON body' });
+  if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Request body too large' });
+  console.error('Request failed:', err.message);
+  return res.status(500).json({ error: 'Internal server error' });
+});
 
 // SPA catch-all: MUST be after ALL API routes
 if (fs.existsSync(path.join(__dirname, '../dist', 'index.html'))) {

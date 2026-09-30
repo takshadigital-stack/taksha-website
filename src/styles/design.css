@@ -1,0 +1,92 @@
+/* Simple clay + neumorphic surfaces, with restrained brutalist accents. */
+:root .navbar { padding: 18px 20px; }
+:root .navbar__inner { max-width: 1200px; padding: 10px 18px; gap: 12px; background: var(--color-bg); border-radius: 22px; box-shadow: var(--shadow-neu-raised); }
+:root .navbar--scrolled { background: transparent; backdrop-filter: none; border: 0; box-shadow: none; }
+:root .navbar__link { font-size: 13px; padding: 8px 12px; text-transform: none; letter-spacing: 0; border-radius: 12px; }
+:root .navbar__link--active { box-shadow: none; }
+:root .navbar__actions { gap: 12px; }
+:root .navbar__logo-image { height: 38px; box-shadow: none; }
+:root .navbar__theme-toggle, :root .navbar__hamburger { border-width: 1px; border-radius: 14px; box-shadow: var(--shadow-clay-light); }
+:root .mobile-menu { border-radius: 22px; border-width: 2px; box-shadow: var(--shadow-neu-raised); }
+:root .btn { border-width: 2px; border-radius: 12px; text-transform: none; letter-spacing: 0; min-height: 44px; }
+:root .btn--primary { box-shadow: var(--shadow-neo-sm), inset 2px 2px 5px rgba(255,255,255,.35); }
+:root .btn--primary:hover { transform: translate(-1px,-1px); box-shadow: var(--shadow-neo-md); }
+:root .btn--secondary { background: var(--color-bg); box-shadow: var(--shadow-neu-raised); }
+:root .btn--secondary:hover { box-shadow: var(--shadow-neo-sm); transform: translate(-1px,-1px); }
+:root .btn:active { transform: translate(2px,2px); box-shadow: var(--shadow-neu-recessed); }
+:root .hero { min-height: 780px; min-height: min(820px, 100svh); padding: 140px 0 110px; }
+:root .hero__inner { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 56px; }
+:root .hero__content { gap: 24px; }
+:root .hero__eyebrow { align-self: flex-start; font-size: 13px; font-weight: 600; padding: 9px 14px; border-radius: 99px; background: var(--color-bg); box-shadow: var(--shadow-neu-recessed); color: var(--color-text-secondary); }
+:root .hero__headline { font-size: clamp(48px, 5.4vw, 72px); font-weight: 750; line-height: 1.05; text-transform: none; letter-spacing: -.045em; }
+:root .hero__headline-bottom { display: block; margin-top: 0; background: none; }
+:root .hero__subhead { font-size: 17px; max-width: 460px; line-height: 1.7; font-weight: 400; }
+:root .hero__ctas { gap: 16px; }
+:root .hero__ctas .btn { font-size: 14px; padding: 14px 22px; }
+:root .hero__visual { position: relative; height: auto; min-height: 0; width: 100%; overflow: visible; }
+.craft-visual { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 1; min-height: 320px; max-height: 430px; background: var(--color-bg); border-radius: 36px; box-shadow: var(--shadow-neu-recessed); }
+.craft-visual__tile { display: grid; place-items: center; width: 58%; aspect-ratio: 1; border-radius: 28%; border: 2px solid var(--color-ink); background: var(--color-accent); box-shadow: 6px 6px 0 var(--color-ink), inset 10px 10px 22px rgba(255,255,255,.5), inset -10px -10px 20px rgba(80,60,20,.14); transform: rotate(-8deg); }
+.craft-visual__tile span { font-family: var(--font-display); font-weight: 800; font-size: clamp(100px,12vw,160px); line-height: 1; color: var(--color-ink); transform: rotate(8deg); }
+.craft-visual__dot { position: absolute; width: 58px; height: 58px; border-radius: 20px; box-shadow: var(--shadow-clay-light); }
+.craft-visual__dot--mint { top: 12%; right: 12%; background: var(--color-card-mint); transform: rotate(12deg); }
+.craft-visual__dot--lilac { bottom: 18%; left: 9%; background: var(--color-card-lilac); transform: rotate(-12deg); }
+.craft-visual__caption { position: absolute; bottom: 7%; font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--color-text-secondary); }
+:root .hero__scroll-cue { border: 0; padding: 10px 16px; box-shadow: var(--shadow-neu-recessed); background: var(--color-bg); font-size: 10px; }
+:root .hero__scroll-cue-arrow { animation: none; }
+:root .craft-section { padding-block: 80px; background: var(--color-bg); }
+:root .meaning-panel { padding: 0; border: 0; box-shadow: none; }
+:root .meaning-panel__inner { padding: 48px 32px; background: var(--color-surface); border-radius: 28px; box-shadow: var(--shadow-clay-light); }
+:root .meaning-panel__eyebrow { background: var(--color-accent-soft); color: var(--color-ink); border-radius: 99px; }
+:root .meaning-panel__title { font-size: clamp(28px, 3.5vw, 42px); }
+:root .service-card { background: var(--color-surface); padding: 26px; border: 2px solid var(--color-ink); border-radius: 24px; box-shadow: var(--shadow-clay-light), 3px 3px 0 var(--color-ink); }
+:root .service-card:hover { transform: translateY(-3px); }
+:root .service-card__icon-wrapper { background: var(--color-bg); border-radius: 16px; box-shadow: var(--shadow-neu-recessed); }
+:root .service-card__arrow-btn { border-radius: 12px; }
+:root .process-tactile__container { border: 0; border-radius: 28px; background: var(--color-bg); }
+:root :is(.card, .role-card, .benefit-card, .widget, .stat-card, .task-card, .project-card, .intern-card, .submission-card, .settings-section, .leave-form-container, .leave-history-container, .auth-card, .contact-form) { border-width: 2px !important; border-radius: 22px !important; box-shadow: var(--shadow-clay-light) !important; }
+:root .card::after { display: none; }
+:root .card:hover { transform: translateY(-3px); }
+:root :is(.form-input, .form-textarea, .auth-form__input, .leave-input, .leave-select, .leave-textarea, .form-group input[type="text"], .form-group input[type="email"], .form-group select, .form-group textarea) { border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-bg); box-shadow: var(--shadow-neu-recessed); padding: 13px 16px; }
+:root :is(.form-group label, .auth-form__label, .leave-label) { text-transform: none; letter-spacing: 0; }
+:root :is(.form-input, .form-textarea, .auth-form__input, .leave-input, .leave-select, .leave-textarea):focus-visible { outline: 2px solid var(--color-ink); outline-offset: 3px; }
+:root .contact-form { background: var(--color-surface); }
+:root .role-modal { border-width: 2px; border-radius: 24px; box-shadow: var(--shadow-neu-raised); }
+:root .portal-layout { background-image: none; }
+:root .portal-sidebar { border-width: 2px; background: var(--color-bg); }
+:root .portal-sidebar__header { border-width: 2px; }
+:root .portal-nav__link { border-radius: 12px; }
+:root .settings-toggle { border-width: 1px; border-radius: 14px; box-shadow: var(--shadow-neu-recessed); }
+:root :is(.leave-submit, .auth-form__submit, .role-card__btn) { border-radius: 12px; border: 2px solid var(--color-ink); box-shadow: var(--shadow-neo-sm); text-transform: none; }
+:root .footer { border-top-width: 2px; background: var(--color-surface); }
+@media (max-width: 1023px) {
+  :root .hero { min-height: auto; padding-top: 130px; }
+  :root .hero__inner { grid-template-columns: 1fr 1fr; gap: 28px; }
+  :root .hero__headline { font-size: clamp(40px, 6vw, 60px); }
+  .craft-visual { min-height: 280px; }
+}
+@media (max-width: 767px) {
+  :root .navbar { padding: 14px 16px; }
+  :root .navbar__inner { padding: 9px 12px; border-radius: 18px; }
+  :root .hero { padding: 124px 0 100px; }
+  :root .hero__inner { grid-template-columns: 1fr; gap: 36px; }
+  :root .hero__headline { font-size: clamp(42px, 10vw, 58px); }
+  :root .hero__subhead { font-size: 16px; }
+  :root .hero__visual { max-width: 360px; margin-inline: auto; }
+  .craft-visual { min-height: 280px; }
+  .craft-visual__tile span { font-size: 120px; }
+  :root .hero__ctas .btn { padding: 13px 18px; font-size: 13px; }
+  :root .meaning-panel__inner { padding: 32px 22px; }
+  :root .hero__scroll-cue { bottom: 24px; }
+}
+
+:root .hero > .container { width: 100%; }
+:root .text-eyebrow, :root .text-link { color: #765411; }
+[data-theme="dark"] .text-eyebrow, [data-theme="dark"] .text-link { color: #E6CE82; }
+
+:root .auth-layout { background: var(--color-bg); }
+:root .auth-layout__logo-link { background: var(--color-bg); border-width: 2px; border-radius: 16px; padding: 12px 20px; box-shadow: var(--shadow-neu-raised); }
+:root .auth-layout__logo-text { font-size: 20px; font-weight: 650; letter-spacing: -.02em; }
+:root .auth-layout__logo-text span { color: var(--color-text-secondary); }
+:root .auth-card { overflow: hidden; }
+:root .auth-banner { background: var(--color-accent-soft); color: var(--color-ink); border: 0; border-bottom: 1px solid var(--color-border); font-size: 14px; font-weight: 600; letter-spacing: .02em; padding: 22px 32px; }
+:root .auth-form__submit { background: var(--color-accent); color: var(--color-ink); }

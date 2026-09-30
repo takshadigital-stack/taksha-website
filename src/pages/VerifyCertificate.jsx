@@ -12,30 +12,20 @@ const VerifyCertificate = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    if (certificateNumber) {
-      verifyCertificate(certificateNumber);
-    }
-  }, [certificateNumber]);
-
-  const verifyCertificate = async (id) => {
+    setInputNumber(certificateNumber || '');
+    setCertificateData(null); setErrorMessage('');
+    if (!certificateNumber) { setStatus('idle'); return; }
+    const controller = new AbortController();
     setStatus('loading');
-    try {
-      const API_URL = import.meta.env.VITE_API_URL || '/api';
-      const response = await fetch(`${API_URL}/certificates/verify/${encodeURIComponent(id)}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('No certificate found with this number.');
-        }
-        throw new Error('Failed to verify certificate. Please try again later.');
-      }
-      const data = await response.json();
-      setCertificateData(data);
-      setStatus('success');
-    } catch (error) {
-      setErrorMessage(error.message);
-      setStatus('error');
-    }
-  };
+    const API_URL = import.meta.env.VITE_API_URL || '/api';
+    fetch(API_URL + '/certificates/verify/' + encodeURIComponent(certificateNumber), { signal: controller.signal })
+      .then(response => {
+        if (!response.ok) throw new Error(response.status === 404 ? 'No certificate found with this number.' : 'Failed to verify certificate. Please try again later.');
+        return response.json();
+      }).then(data => { if (!controller.signal.aborted) { setCertificateData(data); setStatus('success'); } })
+      .catch(error => { if (!controller.signal.aborted) { setErrorMessage(error.message); setStatus('error'); } });
+    return () => controller.abort();
+  }, [certificateNumber]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -52,22 +42,23 @@ const VerifyCertificate = () => {
         description="Verify the authenticity of a Taksha Nexus internship certificate."
       />
       
-      <div className="verify-container" style={{ maxWidth: '600px', width: '100%', backgroundColor: 'var(--color-surface)', borderRadius: '12px', border: 'var(--border) solid var(--color-border)', padding: '40px', textAlign: 'center' }}>
+      <div className="verify-container" style={{ maxWidth: '600px', width: '100%', backgroundColor: 'var(--color-surface)', borderRadius: '12px', border: 'var(--border-width) solid var(--color-border)', padding: 'clamp(20px, 5vw, 40px)', overflowWrap: 'anywhere', textAlign: 'center' }}>
         
-        <h1 style={{ fontSize: '28px', color: 'var(--color-text)', marginBottom: '10px', fontWeight: '700' }}>
+        <h1 style={{ fontSize: '28px', color: 'var(--color-text-primary)', marginBottom: '10px', fontWeight: '700' }}>
           Certificate Verification
         </h1>
         <p style={{ color: 'var(--color-text-secondary)', marginBottom: '30px' }}>
           Enter the unique certificate number found on the bottom right of the document to verify its authenticity.
         </p>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '40px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '40px' }}>
           <input
             type="text"
+            aria-label="Certificate number" required maxLength={100}
             value={inputNumber}
             onChange={(e) => setInputNumber(e.target.value)}
             placeholder="e.g. TK/IC/2026/0001"
-            style={{ flex: 1, padding: '12px 16px', borderRadius: '6px', border: 'var(--border) solid var(--color-border)', fontSize: '16px', outline: 'none', backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }}
+            style={{ flex: '1 1 180px', minWidth: 0, padding: '12px 16px', borderRadius: '6px', border: 'var(--border-width) solid var(--color-border)', fontSize: '16px', outline: 'none', backgroundColor: 'var(--color-bg)', color: 'var(--color-text-primary)' }}
           />
           <button 
             type="submit"
@@ -86,7 +77,7 @@ const VerifyCertificate = () => {
         )}
 
         {status === 'error' && (
-          <div style={{ backgroundColor: 'var(--color-card-pink)', border: '2px solid var(--color-ink)', borderRadius: '8px', padding: '24px', color: 'var(--color-ink)' }}>
+          <div role="alert" style={{ backgroundColor: 'var(--color-card-pink)', border: '2px solid var(--color-ink)', borderRadius: '8px', padding: '24px', color: 'var(--color-ink)' }}>
             <svg style={{ width: '48px', height: '48px', margin: '0 auto 10px', color: 'var(--color-ink)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '5px' }}>Verification Failed</h3>
             <p>{errorMessage}</p>
@@ -106,22 +97,22 @@ const VerifyCertificate = () => {
             </div>
             
             <div style={{ padding: '24px', backgroundColor: 'var(--color-surface)' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '20px', marginBottom: '24px' }}>
                 <div>
                   <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Intern Name</div>
-                  <div style={{ fontSize: '16px', color: 'var(--color-text)', fontWeight: '600' }}>{certificateData.internName}</div>
+                  <div style={{ fontSize: '16px', color: 'var(--color-text-primary)', fontWeight: '600' }}>{certificateData.internName}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Role / Track</div>
-                  <div style={{ fontSize: '16px', color: 'var(--color-text)', fontWeight: '600' }}>{certificateData.role}</div>
+                  <div style={{ fontSize: '16px', color: 'var(--color-text-primary)', fontWeight: '600' }}>{certificateData.role}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Date Range</div>
-                  <div style={{ fontSize: '16px', color: 'var(--color-text)' }}>{certificateData.startDate} — {certificateData.endDate}</div>
+                  <div style={{ fontSize: '16px', color: 'var(--color-text-primary)' }}>{certificateData.startDate} — {certificateData.endDate}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Issued On</div>
-                  <div style={{ fontSize: '16px', color: 'var(--color-text)' }}>{new Date(certificateData.issuedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                  <div style={{ fontSize: '16px', color: 'var(--color-text-primary)' }}>{new Date(certificateData.issuedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                 </div>
               </div>
 
@@ -131,7 +122,7 @@ const VerifyCertificate = () => {
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                     {certificateData.projectsCompleted.map((project, idx) => (
                       <li key={idx} style={{ padding: '10px 0', borderBottom: idx !== certificateData.projectsCompleted.length - 1 ? '1px solid var(--color-border)' : 'none' }}>
-                        <div style={{ fontWeight: '500', color: 'var(--color-text)' }}>{project.projectName}</div>
+                        <div style={{ fontWeight: '500', color: 'var(--color-text-primary)' }}>{project.projectName}</div>
                         <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginTop: '4px', display: 'flex', gap: '15px' }}>
                           {project.liveUrl && <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>View Live</a>}
                           {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>View Source</a>}

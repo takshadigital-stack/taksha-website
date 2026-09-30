@@ -21,8 +21,8 @@ export function organizationSchema() {
     '@type': 'Organization',
     name: 'Taksha',
     legalName: 'TAKSHA',
-    url: 'https://www.taksha.studio',
-    logo: 'https://www.taksha.studio/logo.png',
+    url: 'https://taksha.studio',
+    logo: 'https://taksha.studio/taksha-nexus-logo.png',
     description: 'Taksha is a digital craft studio blending branding, design, engineering, and AI.',
     sameAs: [
       'https://www.linkedin.com/company/taksha',
@@ -44,7 +44,7 @@ export function breadcrumbSchema(items) {
       '@type': 'ListItem',
       position: index + 1,
       name: item.name,
-      item: `https://www.taksha.studio${item.path}`,
+      item: `https://taksha.studio${item.path}`,
     })),
   };
 }
@@ -66,8 +66,8 @@ export function localBusinessSchema() {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: 'Taksha',
-    image: 'https://www.taksha.studio/og-image.jpg',
-    url: 'https://www.taksha.studio',
+    image: 'https://taksha.studio/taksha-nexus-logo.png',
+    url: 'https://taksha.studio',
     priceRange: '$$$$',
     address: { '@type': 'PostalAddress', addressCountry: 'US' },
   };
@@ -80,7 +80,7 @@ export function serviceSchema(serviceName, description, path) {
     name: serviceName,
     provider: { '@type': 'Organization', name: 'Taksha' },
     description,
-    url: `https://www.taksha.studio${path}`,
+    url: `https://taksha.studio${path}`,
   };
 }
 
@@ -91,6 +91,6 @@ export function creativeWorkSchema(projectName, description, path) {
     name: projectName,
     creator: { '@type': 'Organization', name: 'Taksha' },
     description,
-    url: `https://www.taksha.studio${path}`,
+    url: `https://taksha.studio${path}`,
   };
 }

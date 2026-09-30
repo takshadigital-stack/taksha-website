@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import SEO from '../../components/SEO/SEO';
 import { useAuth } from '../../context/AuthContext';
 
@@ -16,8 +16,7 @@ export default function ChangePassword() {
   const email = location.state?.email;
 
   if (!tempToken) {
-    navigate('/login');
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   const handleSubmit = async (e) => {
@@ -26,7 +25,11 @@ export default function ChangePassword() {
       setError('Passwords do not match');
       return;
     }
-    
+
+    if (newPassword.length < 8 || newPassword.length > 72) {
+      setError('Password must contain 8–72 characters');
+      return;
+    }
     setIsLoading(true);
     setError('');
 
@@ -39,13 +42,14 @@ export default function ChangePassword() {
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to change password');
       }
 
       await loginWithToken(data.token, data.user);
-      navigate('/intern/dashboard');
+      const portal = data.user.role === 'SUPER_ADMIN' ? 'superadmin' : data.user.role === 'MENTOR' ? 'mentor' : 'intern';
+      navigate(`/${portal}/dashboard`, { replace: true });
     } catch (err) {
       setError(err.message);
       setIsLoading(false);
@@ -64,38 +68,40 @@ export default function ChangePassword() {
           <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)', textAlign: 'center' }}>
             Welcome to Taksha Nexus, <strong>{email}</strong>.<br/>Please set your permanent password to continue.
           </p>
-          
+
           {error && <div style={{ color: 'var(--color-card-pink)', marginBottom: 'var(--space-4)', fontWeight: 800, textAlign: 'center' }}>{error}</div>}
-          
+
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="auth-form__group">
               <label className="auth-form__label" htmlFor="newPassword">NEW PASSWORD</label>
-              <input 
+              <input
                 id="newPassword"
-                type="password" 
-                className="auth-form__input" 
+                type="password"
+                autoComplete="new-password" minLength={8} maxLength={72}
+                className="auth-form__input"
                 placeholder="••••••••"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                required 
+                required
               />
             </div>
 
             <div className="auth-form__group" style={{ marginTop: 'var(--space-4)' }}>
               <label className="auth-form__label" htmlFor="confirmPassword">CONFIRM PASSWORD</label>
-              <input 
+              <input
                 id="confirmPassword"
-                type="password" 
-                className="auth-form__input" 
+                type="password"
+                autoComplete="new-password" minLength={8} maxLength={72}
+                className="auth-form__input"
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                required 
+                required
               />
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="auth-form__submit"
               disabled={isLoading}
               style={{ marginTop: 'var(--space-8)' }}

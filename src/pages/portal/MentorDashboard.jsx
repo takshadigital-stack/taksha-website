@@ -14,6 +14,8 @@ export default function MentorDashboard() {
   const navigate = useNavigate();
   const [isTaskModalOpen, setIsTaskModalOpen] = React.useState(false);
   const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = React.useState(false);
+  const [formError, setFormError] = React.useState('');
+  const [saving, setSaving] = React.useState(false);
   const [newAnnouncement, setNewAnnouncement] = React.useState({ title: '', content: '' });
 
   // Form state
@@ -42,22 +44,31 @@ export default function MentorDashboard() {
     { label: 'Changes Requested', value: changesRequested.length, icon: AlertTriangle, color: 'var(--color-card-purple)' },
   ];
 
-  const handleCreateTask = (e) => {
+  const handleCreateTask = async (e) => {
     e.preventDefault();
-    createTask({ ...newTask, date: new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short' }) });
+    if (saving) return;
+    setSaving(true); setFormError('');
+    const result = await createTask({ ...newTask, date: new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short' }) });
+    setSaving(false);
+    if (!result.success) { setFormError(result.error); return; }
     setIsTaskModalOpen(false);
     setNewTask({ title: '', projectId: '', assignee: interns[0]?.id, priority: 'Medium' });
   };
 
-  const handleCreateAnnouncement = (e) => {
+  const handleCreateAnnouncement = async (e) => {
     e.preventDefault();
-    createAnnouncement(newAnnouncement);
+    if (saving) return;
+    setSaving(true); setFormError('');
+    const result = await createAnnouncement(newAnnouncement);
+    setSaving(false);
+    if (!result.success) { setFormError(result.error); return; }
     setIsAnnouncementModalOpen(false);
     setNewAnnouncement({ title: '', content: '' });
   };
 
   return (
     <div className="mentor-dashboard">
+      {formError && <p role="alert">{formError}</p>}
       <header className="dashboard-header">
         <div>
           <h1 className="dashboard-header__title">Welcome back, {user?.name || 'Mentor'}! 👋</h1>
@@ -288,7 +299,7 @@ export default function MentorDashboard() {
                 </select>
                 {interns.length === 0 && <span style={{ fontSize: '12px', color: 'var(--color-card-pink)', display: 'block', marginTop: '4px' }}>Please add an intern first.</span>}
               </div>
-              <button type="submit" disabled={interns.length === 0} style={{ padding: '12px', background: interns.length === 0 ? 'var(--color-bg-alt)' : 'var(--color-accent)', border: '2px solid var(--color-ink)', fontFamily: 'var(--font-display)', fontWeight: 900, marginTop: 'var(--space-2)', cursor: interns.length === 0 ? 'not-allowed' : 'pointer' }}>ASSIGN TASK</button>
+              <button type="submit" disabled={saving || interns.length === 0} style={{ padding: '12px', background: interns.length === 0 ? 'var(--color-bg-alt)' : 'var(--color-accent)', border: '2px solid var(--color-ink)', fontFamily: 'var(--font-display)', fontWeight: 900, marginTop: 'var(--space-2)', cursor: interns.length === 0 ? 'not-allowed' : 'pointer' }}>ASSIGN TASK</button>
             </form>
           </div>
         </div>
@@ -310,7 +321,7 @@ export default function MentorDashboard() {
                 <label style={{ display: 'block', fontSize: '10px', fontWeight: 800, marginBottom: '4px' }}>MESSAGE</label>
                 <textarea required rows="4" value={newAnnouncement.content} onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})} style={{ width: '100%', padding: '8px', border: '2px solid var(--color-ink)', resize: 'vertical' }}></textarea>
               </div>
-              <button type="submit" style={{ padding: '12px', background: 'var(--color-card-lilac)', border: '2px solid var(--color-ink)', fontFamily: 'var(--font-display)', fontWeight: 900, marginTop: 'var(--space-2)', cursor: 'pointer' }}>POST ANNOUNCEMENT</button>
+              <button type="submit" disabled={saving} style={{ padding: '12px', background: 'var(--color-card-lilac)', border: '2px solid var(--color-ink)', fontFamily: 'var(--font-display)', fontWeight: 900, marginTop: 'var(--space-2)', cursor: 'pointer' }}>POST ANNOUNCEMENT</button>
             </form>
           </div>
         </div>

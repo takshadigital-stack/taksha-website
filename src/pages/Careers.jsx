@@ -68,6 +68,23 @@ const BENEFITS = [
 
 export default function Careers() {
   const [selectedRole, setSelectedRole] = React.useState(null);
+  const modalRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!selectedRole) return;
+    const previousFocus = document.activeElement;
+    const modal = modalRef.current;
+    modal?.focus();
+    const onKey = event => {
+      if (event.key === 'Escape') { event.preventDefault(); setSelectedRole(null); return; }
+      if (event.key !== 'Tab') return;
+      const controls = [...modal.querySelectorAll('button:not(:disabled), input:not(:disabled), select, textarea, a[href]')].filter(el => el.getClientRects().length > 0);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === modal)) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); previousFocus?.focus(); };
+  }, [selectedRole]);
   
   // Prevent body scroll when modal is open
   React.useEffect(() => {
@@ -95,7 +112,7 @@ export default function Careers() {
   };
 
   return (
-    <main className="careers-page pt-32 pb-32">
+    <article className="careers-page pt-32 pb-32">
       <SEO 
         title="Careers | Taksha Nexus Internship Platform" 
         description="Join Taksha Nexus and be part of a mission to empower learners and build impactful products." 
@@ -204,7 +221,6 @@ export default function Careers() {
                 style={{ background: role.btnColor }}
                 onClick={() => {
                   setSelectedRole(role);
-                  setIsApplied(false);
                 }}
               >
                 View Details & Apply <ArrowRight size={18} />
@@ -244,14 +260,14 @@ export default function Careers() {
       {/* Role Details & Application Modal */}
       {selectedRole && (
         <div className="role-modal-overlay" onClick={() => setSelectedRole(null)}>
-          <div className="role-modal" onClick={e => e.stopPropagation()}>
-            <button className="role-modal__close" onClick={() => setSelectedRole(null)}>
+          <div ref={modalRef} data-lenis-prevent className="role-modal" role="dialog" aria-modal="true" aria-labelledby="role-modal-title" tabIndex={-1} onClick={e => e.stopPropagation()}>
+            <button aria-label="Close application" className="role-modal__close" onClick={() => setSelectedRole(null)}>
               <X size={24} />
             </button>
             
             <div className="role-modal__header" style={{ background: selectedRole.categoryColor }}>
               <div className="role-modal__badge">{selectedRole.category} • {selectedRole.id}</div>
-              <h2 className="role-modal__title">{selectedRole.title}</h2>
+              <h2 id="role-modal-title" className="role-modal__title">{selectedRole.title}</h2>
               <div className="role-card__meta">
                 <span><MapPin size={14} /> {selectedRole.location}</span>
                 <span><Clock size={14} /> {selectedRole.duration}</span>
@@ -275,7 +291,7 @@ export default function Careers() {
         </div>
       </section>
 
-    </main>
+    </article>
   );
 }
 

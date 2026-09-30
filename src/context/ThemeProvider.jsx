@@ -16,7 +16,6 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('taksha-theme', theme);
   }, [theme]);
 
   useEffect(() => {
@@ -30,7 +29,11 @@ export function ThemeProvider({ children }) {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('taksha-theme', next);
+      return next;
+    });
   }, []);
 
   return (

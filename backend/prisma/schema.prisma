@@ -41,6 +41,9 @@ model User {
   duration        String?
   availability    String?
   
+  preferences Json?
+  leaveRequests LeaveRequest[]
+
   // Relations
   mentorId      String?
   mentor        User?    @relation("MentorInterns", fields: [mentorId], references: [id])
@@ -246,4 +249,18 @@ model Message {
   
   receiverId String
   receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+model LeaveRequest {
+  id String @id @default(uuid())
+  internId String
+  intern User @relation(fields: [internId], references: [id], onDelete: Cascade)
+  type String
+  from String
+  to String
+  reason String
+  days Int
+  status String @default("PENDING")
+  createdAt DateTime @default(now())
+  @@index([internId, createdAt])
 }

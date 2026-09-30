@@ -27,7 +27,7 @@
 
 @media (min-width: 1024px) {
   .hero__inner {
-    grid-template-columns: 1.2fr 1fr;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
     gap: var(--space-4);
   }
 }
@@ -36,6 +36,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  min-width: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .hero__headline {
@@ -86,13 +89,11 @@
 
 @media (min-width: 1024px) {
   .hero__visual {
-    height: 80vh;
-    min-height: 600px;
-    position: absolute;
-    right: -5%;
-    top: 50%;
-    transform: translateY(-50%) !important; /* Override Framer Motion */
-    width: 55%;
+    height: clamp(400px, 60vh, 600px);
+    min-height: 400px;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
   }
 }
 
@@ -438,4 +439,8 @@
 
 .final-cta__subhead {
   font-weight: 500;
+}
+
+@media (min-width: 1024px) {
+  .hero__headline { font-size: clamp(3rem, 5.4vw, 5.5rem); }
 }

@@ -50,7 +50,8 @@ export default function Login() {
               <label className="auth-form__label" htmlFor="email">EMAIL</label>
               <input
                 id="email"
-                type="text"
+                autoComplete="username"
+                type="email"
                 className="auth-form__input"
                 placeholder="you@taksha.in"
                 value={email}
@@ -63,6 +64,7 @@ export default function Login() {
               <label className="auth-form__label" htmlFor="password">PASSWORD</label>
               <input
                 id="password"
+                autoComplete="current-password"
                 type="password"
                 className="auth-form__input"
                 placeholder="••••••••"

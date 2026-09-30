@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { 
   CheckSquare, Calendar, Info, User, Settings,
   Bell, Menu, X, LayoutDashboard, FolderKanban,
@@ -27,6 +27,7 @@ const MENTOR_NAV_LINKS = [
   { path: '/mentor/kanban', label: 'Kanban Board', icon: FolderKanban },
   { path: '/mentor/submissions', label: 'Submissions', icon: UploadCloud },
   { path: '/mentor/reviews', label: 'Reviews', icon: FileCheck },
+  { path: '/mentor/leave', label: 'Leave Requests', icon: Clock },
   { path: '/mentor/messages', label: 'Messages', icon: MessageSquare },
   { path: '/mentor/reports', label: 'Reports', icon: BarChart2 }
 ];
@@ -51,9 +52,12 @@ export default function PortalLayout({ role = 'intern' }) {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
+  const allowed = user && (user.role === 'SUPER_ADMIN' ||
+    user.role === (role === 'mentor' ? 'MENTOR' : role === 'superadmin' ? 'SUPER_ADMIN' : 'INTERN'));
 
   useEffect(() => {
+    if (!allowed) return;
     const fetchUnread = async () => {
       try {
         const token = localStorage.getItem('taksha_token');
@@ -88,7 +92,7 @@ export default function PortalLayout({ role = 'intern' }) {
       };
       fetchApps();
     }
-  }, [role, location.pathname]); // Refresh when navigating
+  }, [role, location.pathname, allowed]); // Refresh when navigating
 
 
   const NAV_LINKS = role === 'superadmin' ? SUPERADMIN_NAV_LINKS : role === 'mentor' ? MENTOR_NAV_LINKS : INTERN_NAV_LINKS;
@@ -105,6 +109,13 @@ export default function PortalLayout({ role = 'intern' }) {
     setNotifOpen(false);
     setProfileOpen(false);
   }, [location]);
+
+  if (isLoading) return <div role="status">Loading workspace...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (!allowed) {
+    const destination = user.role === 'MENTOR' ? 'mentor' : user.role === 'SUPER_ADMIN' ? 'superadmin' : 'intern';
+    return <Navigate to={`/${destination}/dashboard`} replace />;
+  }
 
   return (
     <div className="portal-layout">

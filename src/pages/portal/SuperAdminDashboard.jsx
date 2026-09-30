@@ -9,20 +9,23 @@ import './MentorDashboard.css';
 export default function SuperAdminDashboard() {
   const [summary, setSummary] = useState(null);
   const [logs, setLogs] = useState([]);
+  const [showAllActivity, setShowAllActivity] = useState(false);
+  const [activityError, setActivityError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchSummary();
-    // Mock logs for the activity feed to make UI complete
-    setLogs([
-      { id: 1, type: 'new', message: 'Rahul Verma applied for Frontend Developer Intern', time: '11:45 AM', icon: FileText, color: 'var(--color-card-purple)' },
-      { id: 2, type: 'ai', message: 'Compatibility Score: 82/100 (Strong Match)', time: '11:50 AM', icon: Cpu, color: 'var(--color-card-yellow)' },
-      { id: 3, type: 'review', message: 'Review assigned to Super Admin', time: '12:05 PM', icon: EyeIcon, color: 'var(--color-card-blue)' },
-      { id: 4, type: 'offer_sent', message: 'Offer letter sent to rahul.verma@example.com', time: '01:30 PM', icon: CheckCircle, color: 'var(--color-card-mint)' },
-      { id: 5, type: 'offer_accepted', message: 'Rahul Verma accepted the offer', time: '02:20 PM', icon: UserPlus, color: 'var(--color-card-mint)' }
-    ]);
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    const url = (import.meta.env.VITE_API_URL || '/api') + '/reports/activity' + (showAllActivity ? '?all=true' : '');
+    fetch(url, { headers: { Authorization: 'Bearer ' + localStorage.getItem('taksha_token') } })
+      .then(res => { if (!res.ok) throw new Error('Unable to load activity'); return res.json(); })
+      .then(data => { if (active) { setLogs(data); setActivityError(''); } })
+      .catch(() => { if (active) setActivityError('Unable to load recent activity.'); });
+    return () => { active = false; };
+  }, [showAllActivity]);
   const fetchSummary = async () => {
     try {
       const token = localStorage.getItem('taksha_token');
@@ -265,32 +268,30 @@ export default function SuperAdminDashboard() {
             <div className="dashboard-grid__sidebar">
               <section className="widget" style={{ height: '100%' }}>
                 <div className="widget__header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h2 className="widget__title">Taksha HR Activity (Today)</h2>
-                  <a href="#" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-accent)', fontWeight: 'bold', textDecoration: 'none' }}>View All Activity</a>
+                  <h2 className="widget__title">Recent HR Activity</h2>
+                  <button onClick={() => setShowAllActivity(previous => !previous)} style={{ fontSize: 'var(--text-sm)', color: 'var(--color-accent)', fontWeight: 'bold', textDecoration: 'none' }}>{showAllActivity ? 'Show Recent Activity' : 'View All Activity'}</button>
                 </div>
                 <div className="widget__body">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    {activityError && <p role="alert">{activityError}</p>}
+                    {!activityError && logs.length === 0 && <p>No activity recorded yet.</p>}
                     {logs.map((log) => (
                       <div key={log.id} style={{ display: 'flex', gap: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border)' }}>
                         <div style={{ 
                           width: '40px', height: '40px', borderRadius: '8px', 
-                          background: log.color, border: '2px solid var(--color-ink)',
+                          background: 'var(--color-card-blue)', border: '2px solid var(--color-ink)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                         }}>
-                          <log.icon size={20} color="var(--color-ink)" />
+                          <FileText size={20} color="var(--color-ink)" />
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                             <strong style={{ fontSize: 'var(--text-sm)' }}>
-                              {log.type === 'new' ? 'New application received' : 
-                               log.type === 'ai' ? 'AI screening completed' : 
-                               log.type === 'review' ? 'Application moved to Under Review' : 
-                               log.type === 'offer_sent' ? 'Offer sent to candidate' : 
-                               'Offer accepted by candidate'}
+                              {log.action}
                             </strong>
-                            <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>{log.time}</span>
+                            <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>{new Date(log.timestamp).toLocaleString('en-IN')}</span>
                           </div>
-                          <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: 0 }}>{log.message}</p>
+                          <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: 0 }}>{[log.candidate, log.result].filter(Boolean).join(' — ')}</p>
                         </div>
                       </div>
                     ))}
@@ -308,14 +309,7 @@ export default function SuperAdminDashboard() {
 }
 
 // Helper component for Eye icon which doesn't exist in our destructured lucide-react import
-function EyeIcon(props) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
+
 
 function PipelineNode({ icon: Icon, label, value, color }) {
   return (

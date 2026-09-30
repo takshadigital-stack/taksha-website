@@ -73,14 +73,15 @@ export default function MentorTasks() {
     }
   };
 
-  const _handleCreateTaskSubmit = async (e) => {
+  const handleCreateTaskSubmit = async (e) => {
     e.preventDefault();
     if (!newTask.assignee) {
       setError('Please select an intern to assign this task to.');
       return;
     }
     setError('');
-    await createTask(newTask);
+    const result = await createTask(newTask);
+    if (!result.success) { setError(result.error); return; }
     setCreateTaskOpen(false);
     setNewTask({ title: '', projectId: '', priority: 'Medium', status: 'TODO', assignee: '' });
     // auto expand the project
@@ -256,7 +257,7 @@ export default function MentorTasks() {
               <h2>Assign New Task</h2>
               {error && <div style={{ color: 'var(--color-card-pink)', marginBottom: 'var(--space-4)', fontWeight: 800 }}>{error}</div>}
               
-              <form onSubmit={handleCreateSubmit}>
+              <form onSubmit={handleCreateTaskSubmit}>
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                   <label style={{ display: 'block', fontWeight: 800, marginBottom: 'var(--space-2)' }}>Task Title</label>
                   <input required type="text" value={newTask.title} onChange={e => setNewTask({...newTask, title: e.target.value})} style={{ width: '100%', padding: '8px', border: '2px solid var(--color-ink)' }} />

@@ -118,6 +118,7 @@ export default function Contact() {
     }
 
     // Validate all
+    if (isSubmitting) return;
     const newErrors = {};
     Object.keys(formData).forEach(key => {
       if (key !== 'honeypot') {
@@ -128,6 +129,7 @@ export default function Contact() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      document.getElementById(Object.keys(newErrors)[0])?.focus();
       return;
     }
 
@@ -145,12 +147,12 @@ export default function Contact() {
 
       const result = await response.json();
 
-      if (response.ok) {
+      if (response.ok && result.success === true) {
         setIsSuccess(true);
       } else {
         setSubmitError(result.error || 'Something went wrong. Please try again.');
       }
-    } catch (_err) {
+    } catch {
       setSubmitError('Failed to connect to the server. Please check your connection or email us directly at hello@taksha.studio.');
     } finally {
       setIsSubmitting(false);
@@ -196,7 +198,7 @@ export default function Contact() {
                     <CheckCircle size={48} className="success-icon" />
                   </motion.div>
                   <h2 className="h3">Message received.</h2>
-                  <p>We'll review your inquiry and an engineer will be in touch within 24 hours.</p>
+                  <p>We'll review your inquiry and be in touch within 1–2 business days.</p>
                   <Button to="/work" variant="primary">View Our Work</Button>
                 </motion.div>
               ) : (

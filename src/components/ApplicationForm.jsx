@@ -9,12 +9,21 @@ export default function ApplicationForm({ role, onCancel }) {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFileName(e.target.files[0].name);
+      const file = e.target.files[0];
+      if (!file.name.toLowerCase().endsWith('.pdf') || file.type !== 'application/pdf' || file.size > 10 * 1024 * 1024) {
+        e.target.value = '';
+        setFileName('');
+        setErrorMsg('Please choose a PDF resume under 10 MB.');
+        return;
+      }
+      setErrorMsg('');
+      setFileName(file.name);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setErrorMsg('');
 
@@ -33,8 +42,8 @@ export default function ApplicationForm({ role, onCancel }) {
         setIsApplied(true);
       } else {
         let errData = {};
-        try { errData = await response.json(); } catch(_e) {}
-        setErrorMsg(`Failed to submit application. ${errData.details ? 'Error: ' + errData.details : 'Please try again later.'}`);
+        try { errData = await response.json(); } catch {}
+        setErrorMsg(`Failed to submit application. ${errData.error || 'Please try again later.'}`);
       }
     } catch (err) {
       setErrorMsg(`Network error. ${err.message}`);
@@ -73,22 +82,22 @@ export default function ApplicationForm({ role, onCancel }) {
           <legend>1. Personal Information</legend>
           <div className="form-row">
             <div className="form-group">
-              <label>Full Name *</label>
-              <input type="text" name="name" className="form-input" required />
+              <label htmlFor="application-name">Full Name *</label>
+              <input type="text" id="application-name" name="name" className="form-input" required />
             </div>
             <div className="form-group">
-              <label>Email Address *</label>
-              <input type="email" name="email" className="form-input" required />
+              <label htmlFor="application-email">Email Address *</label>
+              <input type="email" id="application-email" name="email" className="form-input" required />
             </div>
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Phone / WhatsApp Number *</label>
-              <input type="tel" name="phone" className="form-input" required />
+              <label htmlFor="application-phone">Phone / WhatsApp Number *</label>
+              <input type="tel" id="application-phone" name="phone" className="form-input" required />
             </div>
             <div className="form-group">
-              <label>Current City & State *</label>
-              <input type="text" name="location" className="form-input" required />
+              <label htmlFor="application-location">Current City & State *</label>
+              <input type="text" id="application-location" name="location" className="form-input" required />
             </div>
           </div>
         </fieldset>
@@ -98,22 +107,22 @@ export default function ApplicationForm({ role, onCancel }) {
           <legend>2. Educational Information</legend>
           <div className="form-row">
             <div className="form-group">
-              <label>College / University Name *</label>
-              <input type="text" name="college" className="form-input" required />
+              <label htmlFor="application-college">College / University Name *</label>
+              <input type="text" id="application-college" name="college" className="form-input" required />
             </div>
             <div className="form-group">
-              <label>Course / Degree *</label>
-              <input type="text" name="degree" className="form-input" required />
+              <label htmlFor="application-degree">Course / Degree *</label>
+              <input type="text" id="application-degree" name="degree" className="form-input" required />
             </div>
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Branch / Specialization</label>
-              <input type="text" name="specialization" className="form-input" />
+              <label htmlFor="application-specialization">Branch / Specialization</label>
+              <input type="text" id="application-specialization" name="specialization" className="form-input" />
             </div>
             <div className="form-group">
-              <label>Current Year of Study *</label>
-              <select name="currentYear" className="form-input" required>
+              <label htmlFor="application-currentYear">Current Year of Study *</label>
+              <select id="application-currentYear" name="currentYear" className="form-input" required>
                 <option value="">Select Year</option>
                 <option value="1st Year">1st Year</option>
                 <option value="2nd Year">2nd Year</option>
@@ -124,8 +133,8 @@ export default function ApplicationForm({ role, onCancel }) {
             </div>
           </div>
           <div className="form-group">
-            <label>Expected Graduation Year *</label>
-            <input type="text" name="graduationYear" className="form-input" placeholder="e.g. 2025" required />
+            <label htmlFor="application-graduationYear">Expected Graduation Year *</label>
+            <input type="text" id="application-graduationYear" name="graduationYear" className="form-input" placeholder="e.g. 2025" required />
           </div>
         </fieldset>
 
@@ -133,12 +142,12 @@ export default function ApplicationForm({ role, onCancel }) {
         <fieldset className="form-section">
           <legend>3. Skills & Experience</legend>
           <div className="form-group">
-            <label>Technical / Professional Skills *</label>
-            <input type="text" name="skills" className="form-input" placeholder="React, Node.js, Figma, etc." required />
+            <label htmlFor="application-skills">Technical / Professional Skills *</label>
+            <input type="text" id="application-skills" name="skills" className="form-input" placeholder="React, Node.js, Figma, etc." required />
           </div>
           <div className="form-group">
-            <label>Briefly describe your experience with these skills</label>
-            <textarea name="experience" className="form-textarea" rows="3"></textarea>
+            <label htmlFor="application-experience">Briefly describe your experience with these skills</label>
+            <textarea id="application-experience" name="experience" className="form-textarea" rows="3"></textarea>
           </div>
         </fieldset>
 
@@ -153,22 +162,22 @@ export default function ApplicationForm({ role, onCancel }) {
             </div>
           </div>
           <div className="form-group">
-            <label>Describe your best project</label>
-            <textarea name="bestProject" className="form-textarea" rows="2"></textarea>
+            <label htmlFor="application-bestProject">Describe your best project</label>
+            <textarea id="application-bestProject" name="bestProject" className="form-textarea" rows="2"></textarea>
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>GitHub Profile Link</label>
-              <input type="url" name="githubUrl" className="form-input" />
+              <label htmlFor="application-githubUrl">GitHub Profile Link</label>
+              <input type="url" id="application-githubUrl" name="githubUrl" className="form-input" />
             </div>
             <div className="form-group">
-              <label>LinkedIn Profile Link</label>
-              <input type="url" name="linkedinUrl" className="form-input" />
+              <label htmlFor="application-linkedinUrl">LinkedIn Profile Link</label>
+              <input type="url" id="application-linkedinUrl" name="linkedinUrl" className="form-input" />
             </div>
           </div>
           <div className="form-group">
-            <label>Portfolio / Personal Website Link</label>
-            <input type="url" name="portfolio" className="form-input" />
+            <label htmlFor="application-portfolio">Portfolio / Personal Website Link</label>
+            <input type="url" id="application-portfolio" name="portfolio" className="form-input" />
           </div>
         </fieldset>
 
@@ -176,7 +185,7 @@ export default function ApplicationForm({ role, onCancel }) {
         <fieldset className="form-section">
           <legend>5. Resume</legend>
           <div className="form-group">
-            <label>Upload Resume (PDF only) *</label>
+            <label htmlFor="resume-upload">Upload Resume (PDF only) *</label>
             <div className="file-upload-wrapper">
               <input type="file" name="resume" accept="application/pdf" id="resume-upload" className="file-input-hidden" onChange={handleFileChange} required />
               <label htmlFor="resume-upload" className="file-upload-btn">
@@ -191,8 +200,8 @@ export default function ApplicationForm({ role, onCancel }) {
           <legend>6. Availability</legend>
           <div className="form-row">
             <div className="form-group">
-              <label>Internship Duration You Can Commit To *</label>
-              <select name="duration" className="form-input" required>
+              <label htmlFor="application-duration">Internship Duration You Can Commit To *</label>
+              <select id="application-duration" name="duration" className="form-input" required>
                 <option value="">Select Duration</option>
                 <option value="1 Month">1 Month</option>
                 <option value="2 Months">2 Months</option>
@@ -202,8 +211,8 @@ export default function ApplicationForm({ role, onCancel }) {
               </select>
             </div>
             <div className="form-group">
-              <label>Availability *</label>
-              <select name="availability" className="form-input" required>
+              <label htmlFor="application-availability">Availability *</label>
+              <select id="application-availability" name="availability" className="form-input" required>
                 <option value="">Select Availability</option>
                 <option value="Full-time">Full-time</option>
                 <option value="Part-time">Part-time</option>
@@ -212,12 +221,12 @@ export default function ApplicationForm({ role, onCancel }) {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Hours Available Per Week</label>
-              <input type="text" name="hoursPerWeek" className="form-input" placeholder="e.g. 20 hours" />
+              <label htmlFor="application-hoursPerWeek">Hours Available Per Week</label>
+              <input type="text" id="application-hoursPerWeek" name="hoursPerWeek" className="form-input" placeholder="e.g. 20 hours" />
             </div>
             <div className="form-group">
-              <label>Available Start Date *</label>
-              <input type="date" name="startDate" className="form-input" required />
+              <label htmlFor="application-startDate">Available Start Date *</label>
+              <input type="date" id="application-startDate" name="startDate" className="form-input" required />
             </div>
           </div>
         </fieldset>
@@ -226,16 +235,16 @@ export default function ApplicationForm({ role, onCancel }) {
         <fieldset className="form-section">
           <legend>7. Motivation</legend>
           <div className="form-group">
-            <label>Why do you want to join this internship? *</label>
-            <textarea name="motivation" className="form-textarea" rows="2" required></textarea>
+            <label htmlFor="application-motivation">Why do you want to join this internship? *</label>
+            <textarea id="application-motivation" name="motivation" className="form-textarea" rows="2" required></textarea>
           </div>
           <div className="form-group">
-            <label>What do you hope to learn during this internship?</label>
-            <textarea name="expectations" className="form-textarea" rows="2"></textarea>
+            <label htmlFor="application-expectations">What do you hope to learn during this internship?</label>
+            <textarea id="application-expectations" name="expectations" className="form-textarea" rows="2"></textarea>
           </div>
           <div className="form-group">
-            <label>Why should we select you?</label>
-            <textarea name="whySelectYou" className="form-textarea" rows="2"></textarea>
+            <label htmlFor="application-whySelectYou">Why should we select you?</label>
+            <textarea id="application-whySelectYou" name="whySelectYou" className="form-textarea" rows="2"></textarea>
           </div>
         </fieldset>
 
@@ -243,8 +252,8 @@ export default function ApplicationForm({ role, onCancel }) {
         <fieldset className="form-section">
           <legend>8. Source & Declaration</legend>
           <div className="form-group">
-            <label>How did you hear about this internship? *</label>
-            <select name="source" className="form-input" required>
+            <label htmlFor="application-source">How did you hear about this internship? *</label>
+            <select id="application-source" name="source" className="form-input" required>
               <option value="">Select Source</option>
               <option value="LinkedIn">LinkedIn</option>
               <option value="Instagram">Instagram</option>
@@ -262,7 +271,7 @@ export default function ApplicationForm({ role, onCancel }) {
           </div>
         </fieldset>
 
-        {errorMsg && <div className="error-message" style={{ color: 'red', padding: '10px', background: '#ffebee', borderLeft: '4px solid red', marginBottom: '20px' }}>{errorMsg}</div>}
+        {errorMsg && <div className="error-message" role="alert" style={{ color: 'red', padding: '10px', background: '#ffebee', borderLeft: '4px solid red', marginBottom: '20px' }}>{errorMsg}</div>}
         
         <div className="form-actions" style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
           <button type="button" className="btn btn--secondary" onClick={onCancel} style={{ flex: 1 }}>

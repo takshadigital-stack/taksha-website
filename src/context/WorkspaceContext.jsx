@@ -15,9 +15,15 @@ export const WorkspaceProvider = ({ children }) => {
   const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return; // Don't fetch if not logged in
+    setData({ projects: [], tasks: [], interns: [], announcements: [], submissions: [] });
+    if (!user) { setLoading(false); return; }
+    let active = true;
+    let fetching = false;
+    setLoading(true);
 
     const fetchData = async () => {
+      if (fetching) return;
+      fetching = true;
       try {
         const [projectsRes, tasksRes, internsRes, announcementsRes, submissionsRes] = await Promise.all([
           axios.get(`${API_URL}/projects`),
@@ -27,6 +33,7 @@ export const WorkspaceProvider = ({ children }) => {
           axios.get(`${API_URL}/submissions`)
         ]);
 
+        if (!active) return;
         setData({
           projects: projectsRes.data,
           tasks: tasksRes.data,
@@ -37,7 +44,8 @@ export const WorkspaceProvider = ({ children }) => {
       } catch (err) {
         console.error("Failed to fetch workspace data", err);
       } finally {
-        setLoading(false);
+        fetching = false;
+        if (active) setLoading(false);
       }
     };
 
@@ -46,7 +54,7 @@ export const WorkspaceProvider = ({ children }) => {
     // Poll every 5 seconds for real-time updates across portals
     const intervalId = setInterval(fetchData, 5000);
 
-    return () => clearInterval(intervalId);
+    return () => { active = false; clearInterval(intervalId); };
   }, [user]);
 
   const createProject = async (projectData) => {
@@ -93,8 +101,10 @@ export const WorkspaceProvider = ({ children }) => {
         tasks: [...prev.tasks, res.data],
         projects: prev.projects.map(p => p.id === task.projectId ? { ...p, tasks: [...(p.tasks || []), res.data] } : p)
       }));
+      return { success: true, task: res.data };
     } catch (err) {
       console.error(err);
+      return { success: false, error: err.response?.data?.error || 'Failed to create task' };
     }
   };
 
@@ -183,8 +193,10 @@ export const WorkspaceProvider = ({ children }) => {
     try {
       const res = await axios.post(`${API_URL}/announcements`, announcement);
       setData(prev => ({ ...prev, announcements: [res.data, ...prev.announcements] }));
+      return { success: true };
     } catch (err) {
       console.error(err);
+      return { success: false, error: err.response?.data?.error || 'Failed to create announcement' };
     }
   };
 

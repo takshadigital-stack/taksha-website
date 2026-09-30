@@ -15,13 +15,39 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('taksha_token');
     if (stored && token) {
       try {
-        setUser(JSON.parse(stored));
+        const savedUser = JSON.parse(stored);
+        if (!savedUser?.id || !['INTERN', 'MENTOR', 'SUPER_ADMIN'].includes(savedUser.role)) throw new Error('Invalid saved session');
+        setUser(savedUser);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       } catch (e) {
+        localStorage.removeItem('taksha_user');
+        localStorage.removeItem('taksha_token');
+        delete axios.defaults.headers.common['Authorization'];
         console.error('Failed to parse stored user', e);
       }
     }
     setIsLoading(false);
+  }, []);
+
+  const loginWithToken = (token, userData) => {
+    if (!token || !userData?.id || !['INTERN', 'MENTOR', 'SUPER_ADMIN'].includes(userData.role)) throw new Error('Invalid sign-in response');
+    localStorage.setItem('taksha_user', JSON.stringify(userData));
+    localStorage.setItem('taksha_token', token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setUser(userData);
+  };
+
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(response => response, error => {
+      if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
+        setUser(null);
+        localStorage.removeItem('taksha_user');
+        localStorage.removeItem('taksha_token');
+        delete axios.defaults.headers.common['Authorization'];
+      }
+      return Promise.reject(error);
+    });
+    return () => axios.interceptors.response.eject(interceptor);
   }, []);
 
   const login = async (email, password) => {
@@ -40,15 +66,12 @@ export const AuthProvider = ({ children }) => {
 
       const { token, user: userData } = res.data;
 
-      setUser(userData);
-      localStorage.setItem('taksha_user', JSON.stringify(userData));
-      localStorage.setItem('taksha_token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      loginWithToken(token, userData);
 
       return { success: true, role: userData.role };
     } catch (err) {
       console.error('Login failed', err.response?.data?.error || err.message);
-      return { success: false, error: err.response?.data?.error };
+      return { success: false, error: err.response?.data?.error || 'Unable to sign in. Please check your connection and try again.' };
     }
   };
 
@@ -75,7 +98,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateProfile, isLoading }}>
+    <AuthContext.Provider value={{ user, login, loginWithToken, logout, updateProfile, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

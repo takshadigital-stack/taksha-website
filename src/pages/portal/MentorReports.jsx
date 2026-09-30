@@ -110,10 +110,10 @@ export default function MentorReports() {
             </div>
             
             <div className="mock-bar-chart">
-              <div className="mock-bar" style={{ height: `${(tasks.todo / tasks.total) * 100}%` }}><strong>{tasks.todo}</strong><span>To Do</span></div>
-              <div className="mock-bar" style={{ height: `${(tasks.inProgress / tasks.total) * 100}%`, background: 'var(--color-card-purple)' }}><strong>{tasks.inProgress}</strong><span>Working</span></div>
-              <div className="mock-bar" style={{ height: `${(tasks.review / tasks.total) * 100}%`, background: 'var(--color-accent)' }}><strong>{tasks.review}</strong><span>Review</span></div>
-              <div className="mock-bar" style={{ height: `${(tasks.done / tasks.total) * 100}%`, background: 'var(--color-card-pink)' }}><strong>{tasks.done}</strong><span>Done</span></div>
+              <div className="mock-bar" style={{ height: `${(tasks.todo / (tasks.total || 1)) * 100}%` }}><strong>{tasks.todo}</strong><span>To Do</span></div>
+              <div className="mock-bar" style={{ height: `${(tasks.inProgress / (tasks.total || 1)) * 100}%`, background: 'var(--color-card-purple)' }}><strong>{tasks.inProgress}</strong><span>Working</span></div>
+              <div className="mock-bar" style={{ height: `${(tasks.review / (tasks.total || 1)) * 100}%`, background: 'var(--color-accent)' }}><strong>{tasks.review}</strong><span>Review</span></div>
+              <div className="mock-bar" style={{ height: `${(tasks.done / (tasks.total || 1)) * 100}%`, background: 'var(--color-card-pink)' }}><strong>{tasks.done}</strong><span>Done</span></div>
             </div>
           </div>
 

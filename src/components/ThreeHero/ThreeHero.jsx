@@ -128,7 +128,7 @@ export default function ThreeHero({ prefersReducedMotion }) {
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, zIndex: 0, pointerEvents: 'none' }}>
-      <Canvas shadows camera={{ position: [0, 0, 8], fov: 45 }} style={{ pointerEvents: 'auto' }}>
+      <Canvas dpr={[1, 1.5]} fallback={<div aria-hidden="true" />} shadows camera={{ position: [0, 0, 8], fov: 45 }} style={{ pointerEvents: 'auto' }}>
         <ambientLight intensity={0.5} />
         <directionalLight 
           castShadow 

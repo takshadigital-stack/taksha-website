@@ -13,6 +13,7 @@ import './styles/reset.css'
 import './styles/tokens.css'
 import './styles/typography.css'
 import './styles/global.css'
+import './styles/design.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

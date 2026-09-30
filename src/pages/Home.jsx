@@ -1,7 +1,7 @@
 /* =======================================================================
    Home Page — Tactile Premium Hybrid Redesign
    ======================================================================= */
-import { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight, ArrowDown, Palette, Layout, Code, Bot } from 'lucide-react';
@@ -12,8 +12,7 @@ import Button from '../components/Button/Button';
 import { usePrefersReducedMotion } from '../context/MotionPreferenceContext';
 import './Home.css';
 
-// Lazy load ThreeHero to avoid blocking initial render
-const ThreeHero = lazy(() => import('../components/ThreeHero/ThreeHero'));
+
 
 /* -----------------------------------------------------------------------
    Services data
@@ -34,7 +33,7 @@ const ThreeHero = lazy(() => import('../components/ThreeHero/ThreeHero'));
     icon: Code,
     title: 'Engineering',
     description: 'Fast, accessible, precision-built React frontends.',
-    path: '/services/website-design',
+    path: '/services/react-development',
   },
   {
     icon: Bot,
@@ -109,7 +108,7 @@ export default function Home() {
 function HeroSection({ prefersReducedMotion }) {
   const scrollToNext = () => {
     const next = document.querySelector('.craft-section');
-    next?.scrollIntoView({ behavior: 'smooth' });
+    next?.scrollIntoView({ behavior: prefersReducedMotion ? 'instant' : 'smooth' });
   };
 
   return (
@@ -122,10 +121,11 @@ function HeroSection({ prefersReducedMotion }) {
             animate="visible"
             variants={staggerContainer}
           >
+            <span className="hero__eyebrow">Independent digital craft studio</span>
             <motion.h1 className="hero__headline" variants={fadeUp} custom={0}>
-              <span className="hero__headline-top">CRAFTING</span><br/>
-              <span className="hero__headline-bottom highlight-block">DIGITAL</span><br/>
-              <span className="hero__headline-top">EXCELLENCE.</span>
+              <span className="hero__headline-top">Crafting</span>
+              <span className="hero__headline-bottom">digital</span>
+              <span className="hero__headline-top">excellence.</span>
             </motion.h1>
             <motion.p className="hero__subhead" variants={fadeUp} custom={1}>
               Taksha Nexus blends branding, design, engineering, and AI to build digital
@@ -148,10 +148,11 @@ function HeroSection({ prefersReducedMotion }) {
             transition={{ duration: 1, delay: 0.2, ease: [0.34, 1.56, 0.64, 1] }}
             aria-hidden="true"
           >
-            <div className="hero__visual-canvas-container">
-               <Suspense fallback={null}>
-                 <ThreeHero prefersReducedMotion={prefersReducedMotion} />
-               </Suspense>
+            <div className="craft-visual">
+              <span className="craft-visual__dot craft-visual__dot--mint" />
+              <span className="craft-visual__dot craft-visual__dot--lilac" />
+              <div className="craft-visual__tile"><span>T</span></div>
+              <span className="craft-visual__caption">Made with intention.</span>
             </div>
           </motion.div>
         </div>

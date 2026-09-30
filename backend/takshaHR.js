@@ -47,6 +47,13 @@ const sendEmail = async ({ to, subject, html, attachments = [] }) => {
   }
 };
 
+// Optional workspace alerts respect the recipient's saved preferences.
+const notifyTaskAssignment = async (userId) => {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, preferences: true } });
+  if (!user || user.preferences?.emailNotifications === false || user.preferences?.taskNotifications === false) return;
+  return sendEmail({ to: user.email, subject: 'New task assigned — Taksha Nexus', html: '<p>A new task has been assigned to you. Sign in to your Taksha workspace to view its details.</p>' });
+};
+
 const evaluateApplication = async (appId) => {
   const application = await prisma.application.findUnique({ where: { id: appId } });
   if (!application) return;
@@ -218,6 +225,7 @@ const logSystemAction = async (action, candidate, result, performedBy) => {
 
 module.exports = {
   sendEmail,
+  notifyTaskAssignment,
   evaluateApplication,
   generateOfferPDF,
   logSystemAction

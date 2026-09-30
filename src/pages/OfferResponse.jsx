@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO/SEO';
-import Navbar from '../components/Navbar/Navbar';
-import Footer from '../components/Footer/Footer';
 import './Careers.css';
 
 export default function OfferResponse() {
@@ -33,7 +31,7 @@ export default function OfferResponse() {
         setError(err.message);
         setLoading(false);
       });
-  }, [id]);
+  }, [id, API_URL]);
 
   const handleAction = async (action) => {
     setActioning(true);
@@ -66,8 +64,7 @@ export default function OfferResponse() {
   return (
     <>
       <SEO title="Offer Response | Taksha Nexus" />
-      <Navbar />
-      <main className="careers-page" style={{ minHeight: '80vh', paddingBottom: '4rem' }}>
+      <div className="careers-page" style={{ minHeight: '80vh', paddingBottom: '4rem' }}>
         <div className="container" style={{ maxWidth: '600px', margin: '0 auto' }}>
           
           {loading ? (
@@ -137,8 +134,7 @@ export default function OfferResponse() {
           )}
           
         </div>
-      </main>
-      <Footer />
+      </div>
     </>
   );
 }
